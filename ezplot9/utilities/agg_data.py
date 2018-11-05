@@ -15,7 +15,7 @@ def agg_data(df, x, y, group):
   if group is None:
     gdata = df2.groupby("x", as_index = False)["y"].sum()
   elif group is not None:
-    df2["group"] = df.eval("group = " + group)["group"]
+    df2["group"] = df.eval("group = " + group)["group"].astype("category")
     gdata = df2.groupby(["x", "group"], as_index = False)["y"].sum()
 
 
