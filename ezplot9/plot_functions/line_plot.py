@@ -1,8 +1,6 @@
 import plotnine as p9
-from plotnine import ylab, xlab, theme
-from plotnine.data import mtcars
+from ezplot9.utilities.agg_data import agg_data
 import pandas as pd
-from ezplot9.utilities import agg_data
 
 # line_plot(mtcars, x = "cyl", y = "carb") + ylab("Total Carburetors")
 # line_plot(mtcars, x = "cyl", y = "1", points = True) + ylab("Count of Cars")
@@ -18,7 +16,6 @@ def line_plot(df, x, y, group = None, size = 12, points = False):
   size - base size for theme_*
   points - Whether to overlay points on line (default is False)
   """
-
   gdata = agg_data(df, x, y, group)
 
   if group is None:
@@ -35,9 +32,9 @@ def line_plot(df, x, y, group = None, size = 12, points = False):
   g = (
     g +
     p9.theme_bw(base_size = size) +
-    theme(legend_position = "top") +
-    xlab(x) +
-    ylab(y)
+    p9.theme(legend_position = "top") +
+    p9.xlab(x) +
+    p9.ylab(y)
   )
 
   if points and group is None:
