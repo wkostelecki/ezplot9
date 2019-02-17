@@ -34,7 +34,7 @@ class EZPlot(p9.ggplot):
 
     def column_is_timestamp(self, col):
         '''
-        Check if a column in self.data is categorical or not
+        Check if a column in self.data is timestamp or not
 
         Parameters
         ----------
