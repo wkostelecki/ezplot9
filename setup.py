@@ -9,6 +9,13 @@ setup(name='ezplot9',
       description='Package for quick plots',
       url='http://github.com/wkostelecki/ezplot9',
       author='Wojtek Kostelecki',
+      install_requires=[
+            'pandas',
+            'numpy',
+            'seaborn',
+            'plotnine',
+            'pydataset',
+            'pytest'],
       license='MIT')
 
 
