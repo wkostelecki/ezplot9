@@ -6,7 +6,7 @@ import matplotlib as mpl
 def ez_colors(n,
               hexadecimal=True):
     '''
-    Generate the cqc color palette with 'n' colors
+    Generate the ez color palette with 'n' colors
 
     Parameters
     ----------
@@ -22,17 +22,20 @@ def ez_colors(n,
     '''
 
     if n <= 10:
+        # use the tab10 palette
         colors = plt.cm.tab10(np.linspace(0, 1, 10))[0:n,:]
 
     elif n <= 20:
+        # use the tab10 palette with some extra colors from tab20
         to_fill = n - 10
         tmp = plt.cm.tab20(np.linspace(0, 1, 20))
 
         colors = plt.cm.tab10(np.linspace(0, 1, 10))
 
-        for i in range(0, to_fill):
+        for i in range(to_fill):
             colors = np.insert(colors, 2 * i + 1, tmp[2 * i + 1, :], axis=0)
     else:
+        # interpolate tab20
         to_create = n - 20
         max_generation = to_create // 10 + 1
         n_max_generation = to_create % 10
