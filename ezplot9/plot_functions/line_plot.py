@@ -74,41 +74,41 @@ def line_plot(df,
 
   # set groups
   if group is None:
-    g = g + p9.geom_line(p9.aes(x="x", y="y"), colour = ez_colors(1)[0])
+    g += p9.geom_line(p9.aes(x="x", y="y"), colour = ez_colors(1)[0])
     if show_points:
-      g = g + p9.geom_point(p9.aes(x="x", y="y"), colour = ez_colors(1)[0])
+      g += p9.geom_point(p9.aes(x="x", y="y"), colour = ez_colors(1)[0])
   else:
-    g = g + p9.geom_line(p9.aes(x="x", y="y", group="factor(group)", colour="factor(group)"))
+    g += p9.geom_line(p9.aes(x="x", y="y", group="factor(group)", colour="factor(group)"))
     if show_points:
-      g = g + p9.geom_point(p9.aes(x="x", y="y", colour="factor(group)"))
-    g = g + p9.scale_color_manual(values=ez_colors(g.n_groups('group')))
+      g += p9.geom_point(p9.aes(x="x", y="y", colour="factor(group)"))
+    g += p9.scale_color_manual(values=ez_colors(g.n_groups('group')))
 
   # set facets
   if facet_x is not None and facet_y is None:
-    g = g + p9.facet_wrap('~facet_x')
+    g += p9.facet_wrap('~facet_x')
   if facet_x is not None and facet_y is not None:
-    g = g + p9.facet_grid('facet_y~facet_x')
+    g += p9.facet_grid('facet_y~facet_x')
 
   # set x scale
   if g.column_is_timestamp('x'):
-    g = g + p9.scale_x_datetime()
+    g += p9.scale_x_datetime()
   elif g.column_is_categorical('x'):
-    g = g + p9.scale_x_discrete()
+    g += p9.scale_x_discrete()
   else:
-    g = g + p9.scale_x_continuous(labels=ez_labels)
+    g += p9.scale_x_continuous(labels=ez_labels)
 
   # set y scale
-  g = g + p9.scale_y_continuous(labels=ez_labels)
+  g += p9.scale_y_continuous(labels=ez_labels)
 
   # set axis labels
-  g = g + \
-      p9.xlab(names['x']) + \
-      p9.ylab(names['y'])
+  g += \
+    p9.xlab(names['x']) + \
+    p9.ylab(names['y'])
 
   # set theme
-  g = g + ez_theme(figure_size = figure_size,
-                   base_size = base_size,
-                   legend_title=p9.element_text(text=names['group'], size=base_size))
+  g += ez_theme(figure_size = figure_size,
+                base_size = base_size,
+                legend_title=p9.element_text(text=names['group'], size=base_size))
 
   return g
 
