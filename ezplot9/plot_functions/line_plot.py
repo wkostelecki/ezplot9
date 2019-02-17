@@ -1,48 +1,116 @@
 import plotnine as p9
-from ezplot9.utilities.agg_data import agg_data
-import pandas as pd
+from ..utilities.agg_data import agg_data
+from ..utilities.utils import unname
+from ..utilities.labellers import ez_labels
+from ..utilities.colors import ez_colors
+from ..utilities.themes import ez_theme
+from .ezplot import EZPlot
 
-# line_plot(mtcars, x = "cyl", y = "carb") + ylab("Total Carburetors")
-# line_plot(mtcars, x = "cyl", y = "1", points = True) + ylab("Count of Cars")
-# line_plot(mtcars, "cyl", "1", "am")
-def line_plot(df, x, y, group = None, size = 12, points = False):
-  """
+
+def line_plot(df,
+              x,
+              y,
+              group = None,
+              facet_x = None,
+              facet_y = None,
+              aggfun = 'sum',
+              show_points = False,
+              base_size = 10,
+              figure_size = (6,3)):
+  '''
   Aggregates data in df and plots as a line chart.
-  Parameters:
-  df - dataframe
-  x - quoted expression
-  y - quoted expression
-  group - quoted expression
-  size - base size for theme_*
-  points - Whether to overlay points on line (default is False)
-  """
-  gdata = agg_data(df, x, y, group)
 
+  Parameters
+  ----------
+  df : pd.DataFrame
+    input dataframe
+  x : str
+    quoted expression to be plotted on the x axis
+  y : str
+    quoted expression to be plotted on the y axis
+  group : str
+    quoted expression to be used as group (ie color)
+  facet_x : str
+    quoted expression to be used as facet
+  facet_y : str
+    quoted expression to be used as facet
+  aggfun : str or fun
+    function to be used for aggregating (eg sum, mean, median ...)
+  show_points : bool
+    show/hide markers
+  base_size : int
+    base size for ez_theme
+  figure_size :tuple of int
+    figure size
+
+  Returns
+  -------
+  g : EZPlot
+    EZplot object
+
+  '''
+
+  # create a copy of the data
+  df = df.copy()
+
+  # define groups and variables; remove and store (eventual) names
+  names = {}
+  groups = {}
+  variables = {}
+
+  for label, var in zip(['x', 'group', 'facet_x', 'facet_y'], [x, group, facet_x, facet_y]):
+    names[label], groups[label] = unname(var)
+  names['y'], variables['y'] = unname(y)
+
+  # fix special cases
+  if x == '.index':
+    groups['x'] = '.index'
+    names['x'] = df.index.name if df.index.name is not None else ''
+
+  # aggregate data
+  gdata = agg_data(df, variables, groups, aggfun, fill_groups=True)
+
+  g = EZPlot(gdata)
+
+  # set groups
   if group is None:
-    g = (
-      p9.ggplot(gdata) +
-      p9.geom_line(p9.aes(x = "x", y = "y"))
-    )
+    g = g + p9.geom_line(p9.aes(x="x", y="y"), colour = ez_colors(1)[0])
+    if show_points:
+      g = g + p9.geom_point(p9.aes(x="x", y="y"), colour = ez_colors(1)[0])
   else:
-    g = (
-      p9.ggplot(gdata) +
-      p9.geom_line(p9.aes(x = "x", y = "y", group = "group", colour = "group"))
-    )
+    g = g + p9.geom_line(p9.aes(x="x", y="y", group="factor(group)", colour="factor(group)"))
+    if show_points:
+      g = g + p9.geom_point(p9.aes(x="x", y="y", colour="factor(group)"))
+    g = g + p9.scale_color_manual(values=ez_colors(g.n_groups('group')))
 
-  g = (
-    g +
-    p9.theme_bw(base_size = size) +
-    p9.theme(legend_position = "top") +
-    p9.xlab(x) +
-    p9.ylab(y)
-  )
+  # set facets
+  if facet_x is not None and facet_y is None:
+    g = g + p9.facet_wrap('~facet_x')
+  if facet_x is not None and facet_y is not None:
+    g = g + p9.facet_grid('facet_y~facet_x')
 
-  if points and group is None:
-    g = g + p9.geom_point(p9.aes(x = "x", y = "y"), colour = "black")
-  elif points:
-    g = g + p9.geom_point(p9.aes(x = "x", y = "y", colour = "group"))
+  # set x scale
+  if g.column_is_timestamp('x'):
+    g = g + p9.scale_x_datetime()
+  elif g.column_is_categorical('x'):
+    g = g + p9.scale_x_discrete()
+  else:
+    g = g + p9.scale_x_continuous(labels=ez_labels)
 
-  return(g)
+  # set y scale
+  g = g + p9.scale_y_continuous(labels=ez_labels)
+
+  # set axis labels
+  g = g + \
+      p9.xlab(names['x']) + \
+      p9.ylab(names['y'])
+
+  # set theme
+  g = g + ez_theme(figure_size = figure_size,
+                   base_size = base_size,
+                   legend_title=p9.element_text(text=names['group'], size=base_size))
+
+  return g
 
 
 
