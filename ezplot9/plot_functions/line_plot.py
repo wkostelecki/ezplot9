@@ -51,7 +51,7 @@ def line_plot(df,
   '''
 
   # create a copy of the data
-  df = df.copy()
+  dataframe = df.copy()
 
   # define groups and variables; remove and store (eventual) names
   names = {}
@@ -65,10 +65,10 @@ def line_plot(df,
   # fix special cases
   if x == '.index':
     groups['x'] = '.index'
-    names['x'] = df.index.name if df.index.name is not None else ''
+    names['x'] = dataframe.index.name if dataframe.index.name is not None else ''
 
   # aggregate data
-  gdata = agg_data(df, variables, groups, aggfun, fill_groups=True)
+  gdata = agg_data(dataframe, variables, groups, aggfun, fill_groups=True)
 
   g = EZPlot(gdata)
 
