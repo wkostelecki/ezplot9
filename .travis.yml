@@ -2,5 +2,6 @@
   install:
     - pip install plotnine
     - pip install seaborn
+    - pip install pydataset
   script:
     - pytest
