@@ -52,7 +52,7 @@ def agg_data(df,
     # aggregate df
     group_cols = list(groups.keys())
 
-    if not(aggfun is None):
+    if aggfun is not None:
         df = df.groupby(group_cols) \
             .agg(aggfun) \
             .reset_index()

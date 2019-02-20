@@ -1,7 +1,7 @@
 import pytest
 from pydataset import data
 
-from ezplot9.utilities import agg_data
+from ..utilities import agg_data
 
 mtcars = data('mtcars')
 
