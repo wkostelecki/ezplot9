@@ -1,6 +1,6 @@
 import pytest
 
-from ezplot9.utilities import utils
+from ..utilities import utils
 
 unname_testdata = [
     ('x', 'x', 'x'),
