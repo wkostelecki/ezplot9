@@ -67,8 +67,9 @@ def line_plot(df,
     groups['x'] = '.index'
     names['x'] = dataframe.index.name if dataframe.index.name is not None else ''
 
-  # aggregate data
+  # aggregate data and reorder columns
   gdata = agg_data(dataframe, variables, groups, aggfun, fill_groups=True)
+  gdata = gdata[[c for c in ['x', 'y', 'group', 'facet_x', 'facet_y'] if c in gdata.columns]]
 
   g = EZPlot(gdata)
 
