@@ -115,11 +115,15 @@ def hist_plot(df,
     new_variables = {'w':'w'}
 
     # bin data (if necessary)
-    if tmp_df.dtypes != np.dtype('O'):
+    if tmp_df['x'].dtypes != np.dtype('O'):
         tmp_df['x'], bins_x, bin_width_x= bin_data(tmp_df['x'], bins[0], bin_width[0])
+    else:
+        bin_width_x=1
     if y is not None:
-        if tmp_df.dtypes != np.dtype('O'):
+        if tmp_df['y'].dtypes != np.dtype('O'):
             tmp_df['y'], bins_y, bin_width_y = bin_data(tmp_df['y'], bins[1], bin_width[1])
+        else:
+            bin_width_y=1
     else:
         bin_width_y=1
 
@@ -133,7 +137,7 @@ def hist_plot(df,
         if len(non_xy_groups)==0:
             gdata['w'] = gdata['w']/(gdata['w'].sum()*bin_width_x*bin_width_y)
         else:
-            gdata['w'] = gdata.groupby(non_xy_groups).apply(lambda x: x/(x.sum()*bin_width_x*bin_width_y))
+            gdata['w'] = gdata.groupby(non_xy_groups)['w'].apply(lambda x: x/(x.sum()*bin_width_x*bin_width_y))
 
     # start plotting
     g = EZPlot(gdata)
