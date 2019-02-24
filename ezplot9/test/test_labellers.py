@@ -1,6 +1,6 @@
 import pytest
 
-from ezplot9.utilities.labellers import *
+from ..utilities.labellers import *
 
 ez_labels_testdata = [
     ([1e-3, 0, 1, 1e3, 1e6, 1e9], ['0.001', '0', '1', '1k', '1m', '1b']),

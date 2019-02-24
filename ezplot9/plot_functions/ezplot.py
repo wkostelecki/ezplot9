@@ -63,7 +63,7 @@ class EZPlot(p9.ggplot):
 
         Returns
         -------
-        n
+        n : int
             number of unique values
 
         '''
