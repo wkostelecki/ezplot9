@@ -5,7 +5,7 @@ from ..utilities.agg_data import agg_data
 from ..utilities.utils import unname
 from ..utilities.labellers import ez_labels
 from ..utilities.colors import ez_colors
-from ..utilities.themes import ez_theme
+from ..utilities.themes import theme_ez
 from ..utilities.binnnig import bin_data
 from .ezplot import EZPlot
 
@@ -58,7 +58,7 @@ def hist_plot(df,
     normalize : bool
         normalize histogram counts
     base_size : int
-      base size for ez_theme
+      base size for theme_ez
     figure_size :tuple of int
       figure size
 
@@ -179,7 +179,7 @@ def hist_plot(df,
             p9.ylab('Counts')
 
         # set theme
-        g += ez_theme(figure_size=figure_size,
+        g += theme_ez(figure_size=figure_size,
                       base_size=base_size,
                       legend_title=p9.element_text(text=names['group'], size=base_size))
 
@@ -212,7 +212,7 @@ def hist_plot(df,
             p9.ylab(names['y'])
 
         # set theme
-        g += ez_theme(figure_size=figure_size,
+        g += theme_ez(figure_size=figure_size,
                       base_size=base_size,
                       legend_title=p9.element_text(text='Counts', size=base_size))
 

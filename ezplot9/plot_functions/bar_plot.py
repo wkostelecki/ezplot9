@@ -7,7 +7,7 @@ from ..utilities.themes import theme_ez
 from .ezplot import EZPlot
 
 
-def line_plot(df,
+def bar_plot(df,
               x,
               y,
               group = None,
@@ -17,6 +17,8 @@ def line_plot(df,
               show_points = False,
               base_size = 10,
               figure_size = (6,3)):
+                
+                
   '''
   Aggregates data in df and plots as a line chart.
 
@@ -67,23 +69,19 @@ def line_plot(df,
     groups['x'] = '.index'
     names['x'] = dataframe.index.name if dataframe.index.name is not None else ''
 
-  # aggregate data and reorder columns
+  # aggregate data
   gdata = agg_data(dataframe, variables, groups, aggfun, fill_groups=True)
-  gdata = gdata[[c for c in ['x', 'y', 'group', 'facet_x', 'facet_y'] if c in gdata.columns]]
 
   g = EZPlot(gdata)
 
   # set groups
   if group is None:
-    g += p9.geom_line(p9.aes(x="x", y="y"), colour = ez_colors(1)[0])
-    if show_points:
-      g += p9.geom_point(p9.aes(x="x", y="y"), colour = ez_colors(1)[0])
+    g += p9.geom_col(p9.aes(x="x", y="y"), fill = ez_colors(1)[0])
   else:
-    g += p9.geom_line(p9.aes(x="x", y="y", group="factor(group)", colour="factor(group)"))
-    if show_points:
-      g += p9.geom_point(p9.aes(x="x", y="y", colour="factor(group)"))
-    g += p9.scale_color_manual(values=ez_colors(g.n_groups('group')))
-
+    g += p9.geom_col(p9.aes(x="x", y="y",
+                            group="factor(group)",
+                            fill="factor(group)"))
+    g += p9.scale_fill_manual(values=ez_colors(g.n_groups('group')))
   # set facets
   if facet_x is not None and facet_y is None:
     g += p9.facet_wrap('~facet_x')
@@ -99,7 +97,8 @@ def line_plot(df,
     g += p9.scale_x_continuous(labels=ez_labels)
 
   # set y scale
-  g += p9.scale_y_continuous(labels=ez_labels)
+  g += p9.scale_y_continuous(labels=ez_labels,
+                             expand=[0,0,0.1,0])
 
   # set axis labels
   g += \
@@ -110,8 +109,9 @@ def line_plot(df,
   g += theme_ez(figure_size = figure_size,
                 base_size = base_size,
                 legend_title=p9.element_text(text=names['group'], size=base_size))
+  if group is not None:
+    g += p9.theme(legend_position = "top", legend_title = p9.element_blank())
+
 
   return g
-
-
 
