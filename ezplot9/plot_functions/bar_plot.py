@@ -3,7 +3,7 @@ from ..utilities.agg_data import agg_data
 from ..utilities.utils import unname
 from ..utilities.labellers import ez_labels
 from ..utilities.colors import ez_colors
-from ..utilities.themes import ez_theme
+from ..utilities.themes import theme_ez
 from .ezplot import EZPlot
 
 
@@ -41,7 +41,7 @@ def bar_plot(df,
   show_points : bool
     show/hide markers
   base_size : int
-    base size for ez_theme
+    base size for theme_ez
   figure_size :tuple of int
     figure size
 
@@ -82,7 +82,6 @@ def bar_plot(df,
                             group="factor(group)",
                             fill="factor(group)"))
     g += p9.scale_fill_manual(values=ez_colors(g.n_groups('group')))
-
   # set facets
   if facet_x is not None and facet_y is None:
     g += p9.facet_wrap('~facet_x')
@@ -98,7 +97,8 @@ def bar_plot(df,
     g += p9.scale_x_continuous(labels=ez_labels)
 
   # set y scale
-  g += p9.scale_y_continuous(labels=ez_labels)
+  g += p9.scale_y_continuous(labels=ez_labels,
+                             expand=[0,0,0.1,0])
 
   # set axis labels
   g += \
@@ -106,9 +106,12 @@ def bar_plot(df,
     p9.ylab(names['y'])
 
   # set theme
-  g += ez_theme(figure_size = figure_size,
+  g += theme_ez(figure_size = figure_size,
                 base_size = base_size,
                 legend_title=p9.element_text(text=names['group'], size=base_size))
+  if group is not None:
+    g += p9.theme(legend_position = "top", legend_title = p9.element_blank())
+
 
   return g
 

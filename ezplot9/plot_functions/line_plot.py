@@ -3,7 +3,7 @@ from ..utilities.agg_data import agg_data
 from ..utilities.utils import unname
 from ..utilities.labellers import ez_labels
 from ..utilities.colors import ez_colors
-from ..utilities.themes import ez_theme
+from ..utilities.themes import theme_ez
 from .ezplot import EZPlot
 
 
@@ -39,7 +39,7 @@ def line_plot(df,
   show_points : bool
     show/hide markers
   base_size : int
-    base size for ez_theme
+    base size for theme_ez
   figure_size :tuple of int
     figure size
 
@@ -106,7 +106,7 @@ def line_plot(df,
     p9.ylab(names['y'])
 
   # set theme
-  g += ez_theme(figure_size = figure_size,
+  g += theme_ez(figure_size = figure_size,
                 base_size = base_size,
                 legend_title=p9.element_text(text=names['group'], size=base_size))
 

@@ -4,7 +4,7 @@ from plotnine.themes.theme_gray import theme_gray
 from .colors import ez_colors
 
 STRIP_COLOR = ez_colors(1)[0]
-class ez_theme(theme_gray):
+class theme_ez(theme_gray):
     """
     White background with gray gridlines and colored strips
 
