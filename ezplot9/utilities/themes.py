@@ -40,5 +40,6 @@ class theme_ez(theme_gray):
                   panel_border = element_rect(color='k', size=0.5),
                   plot_background = element_rect(fill='w'),
                   panel_background = element_rect(fill='w', alpha=.2),
+                  axis_line = element_line(color='k', size=0.5),
                   **kwargs),
             inplace=True)

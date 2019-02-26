@@ -18,11 +18,11 @@ POSITION_KWARGS = {'overlay':{'position':'identity', 'alpha':0.7},
 
 def hist_plot(df,
               x,
-              w = '1',
+              y=None,
               group = None,
               facet_x = None,
               facet_y = None,
-              y = None,
+              w='1',
               bins=21,
               bin_width = None,
               position = 'stack',
@@ -39,16 +39,16 @@ def hist_plot(df,
       input dataframe
     x : str
       quoted expression to be plotted on the x axis
-    w : str
-      quoted expression representing histogram weights (default is 1)
+    y : str
+      quoted expression to be plotted on the y axis. If this is specified the histogram will be 2-d.
     group : str
       quoted expression to be used as group (ie color)
     facet_x : str
       quoted expression to be used as facet
     facet_y : str
       quoted expression to be used as facet
-    y : str
-      quoted expression to be plotted on the y axis. If this is specified the histogram will be 2-d.
+    w : str
+      quoted expression representing histogram weights (default is 1)
     bins : int or tuple
         number of bins to be used
     bin_width : float or tuple

@@ -6,21 +6,28 @@ from ..utilities.colors import ez_colors
 from ..utilities.themes import theme_ez
 from .ezplot import EZPlot
 
+import logging
+log = logging.getLogger(__name__)
+
+POSITION_KWARGS = {'overlay':{'position':'identity', 'alpha':0.7},
+                   'stack':{},
+                   'dodge':{'position':'dodge'}}
 
 def bar_plot(df,
-              x,
-              y,
-              group = None,
-              facet_x = None,
-              facet_y = None,
-              aggfun = 'sum',
-              show_points = False,
-              base_size = 10,
-              figure_size = (6,3)):
-                
-                
+             x,
+             y,
+             group = None,
+             facet_x = None,
+             facet_y = None,
+             aggfun = 'sum',
+             position='stack',
+             orientation = 'vertical',
+             base_size = 10,
+             figure_size = (6,3)):
+
+
   '''
-  Aggregates data in df and plots as a line chart.
+  Aggregates data in df and plots as a bar chart.
 
   Parameters
   ----------
@@ -38,8 +45,10 @@ def bar_plot(df,
     quoted expression to be used as facet
   aggfun : str or fun
     function to be used for aggregating (eg sum, mean, median ...)
-  show_points : bool
-    show/hide markers
+  position : str
+    if groups are present, choose between `stack`, `overlay` or `dodge`
+  orientation : str
+    use vertical or horizontal bars
   base_size : int
     base size for theme_ez
   figure_size :tuple of int
@@ -51,6 +60,10 @@ def bar_plot(df,
     EZplot object
 
   '''
+
+  if orientation not in ['horizontal', 'vertical']:
+    log.error("orientation not recognized")
+    raise NotImplementedError("orientation not recognized")
 
   # create a copy of the data
   dataframe = df.copy()
@@ -80,8 +93,10 @@ def bar_plot(df,
   else:
     g += p9.geom_col(p9.aes(x="x", y="y",
                             group="factor(group)",
-                            fill="factor(group)"))
+                            fill="factor(group)"),
+                     **POSITION_KWARGS[position])
     g += p9.scale_fill_manual(values=ez_colors(g.n_groups('group')))
+
   # set facets
   if facet_x is not None and facet_y is None:
     g += p9.facet_wrap('~facet_x')
@@ -105,13 +120,16 @@ def bar_plot(df,
     p9.xlab(names['x']) + \
     p9.ylab(names['y'])
 
+  # set orientation
+  if orientation=='horizontal':
+    g += p9.coord_flip()
+
   # set theme
   g += theme_ez(figure_size = figure_size,
                 base_size = base_size,
                 legend_title=p9.element_text(text=names['group'], size=base_size))
   if group is not None:
     g += p9.theme(legend_position = "top", legend_title = p9.element_blank())
-
 
   return g
 
