@@ -3,6 +3,8 @@ import numpy as np
 import datetime
 import pandas as pd
 
+from pandas.api.types import CategoricalDtype, is_categorical
+
 import logging
 log = logging.getLogger(__name__)
 
@@ -30,7 +32,7 @@ class EZPlot(p9.ggplot):
             log.error('{} is not present in the data'.format(col))
             raise ValueError('{} is not present in the data'.format(col))
         else:
-            return self.data[col].dtypes == np.dtype('O')
+            return (self.data[col].dtypes == np.dtype('O')) or is_categorical(self.data[col].dtypes)
 
     def column_is_timestamp(self, col):
         '''
@@ -68,3 +70,16 @@ class EZPlot(p9.ggplot):
 
         '''
         return len(self.data[col].unique())
+
+    def sort_group(self, group_col, var_col, ascending=True):
+        if group_col in self.data.columns:
+            group_order_list = \
+                self.data \
+                .groupby(group_col)[var_col] \
+                .sum() \
+                .reset_index() \
+                .sort_values(var_col, ascending=ascending)[group_col] \
+                .to_list()
+
+            group_cat = CategoricalDtype(categories=[str(v) for v in group_order_list], ordered=True)
+            self.data[group_col] = self.data[group_col].astype(str).astype(group_cat)
