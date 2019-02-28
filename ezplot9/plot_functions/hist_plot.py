@@ -27,6 +27,7 @@ def hist_plot(df,
               bin_width = None,
               position = 'stack',
               normalize = False,
+              sort_groups=True,
               base_size=10,
               figure_size=(6, 3)):
 
@@ -50,13 +51,15 @@ def hist_plot(df,
     w : str
       quoted expression representing histogram weights (default is 1)
     bins : int or tuple
-        number of bins to be used
+      number of bins to be used
     bin_width : float or tuple
-        bin width to be used
+      bin width to be used
     position : str
-        if groups are present, choose between `stack`, `overlay` or `dodge`
+      if groups are present, choose between `stack`, `overlay` or `dodge`
     normalize : bool
-        normalize histogram counts
+      normalize histogram counts
+    sort_groups : bool
+      sort groups by the sum of their value (otherwise alphabetical order is used)
     base_size : int
       base size for theme_ez
     figure_size :tuple of int
@@ -141,6 +144,17 @@ def hist_plot(df,
 
     # start plotting
     g = EZPlot(gdata)
+    # determine order and create a categorical type
+    if sort_groups:
+        if g.column_is_categorical('x'):
+            g.sort_group('x', 'w', ascending=False)
+        g.sort_group('group', 'w')
+        g.sort_group('facet_x', 'w', ascending=False)
+        g.sort_group('facet_y', 'w', ascending=False)
+        if groups:
+            colors = np.flip(ez_colors(g.n_groups('group')))
+    else:
+        colors = ez_colors(g.n_groups('group'))
 
     if y is None:
         # set groups
@@ -156,7 +170,7 @@ def hist_plot(df,
                              colour=None,
                              stat = 'identity',
                              **POSITION_KWARGS[position])
-            g += p9.scale_fill_manual(values=ez_colors(g.n_groups('group')))
+            g += p9.scale_fill_manual(values=colors)
 
         # set facets
         if facet_x is not None and facet_y is None:
@@ -182,6 +196,9 @@ def hist_plot(df,
         g += theme_ez(figure_size=figure_size,
                       base_size=base_size,
                       legend_title=p9.element_text(text=names['group'], size=base_size))
+
+        if sort_groups:
+            g += p9.guides(fill=p9.guide_legend(reverse=True))
 
     else:
         g += p9.geom_tile(p9.aes(x="x", y="y", fill='w'),

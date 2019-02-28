@@ -1,4 +1,7 @@
 import plotnine as p9
+
+import numpy as np
+
 from ..utilities.agg_data import agg_data
 from ..utilities.utils import unname
 from ..utilities.labellers import ez_labels
@@ -22,6 +25,7 @@ def bar_plot(df,
              aggfun = 'sum',
              position='stack',
              orientation = 'vertical',
+             sort_groups = True,
              base_size = 10,
              figure_size = (6,3)):
 
@@ -49,6 +53,8 @@ def bar_plot(df,
     if groups are present, choose between `stack`, `overlay` or `dodge`
   orientation : str
     use vertical or horizontal bars
+  sort_groups : bool
+    sort groups by the sum of their value (otherwise alphabetical order is used)
   base_size : int
     base size for theme_ez
   figure_size :tuple of int
@@ -87,6 +93,19 @@ def bar_plot(df,
 
   g = EZPlot(gdata)
 
+  # determine order and create a categorical type
+  if sort_groups:
+    if g.column_is_categorical('x'):
+      g.sort_group('x', 'y', ascending=False)
+    g.sort_group('group', 'y')
+    g.sort_group('facet_x', 'y', ascending=False)
+    g.sort_group('facet_y', 'y', ascending=False)
+    if groups:
+      colors = np.flip(ez_colors(g.n_groups('group')))
+  else:
+    colors = ez_colors(g.n_groups('group'))
+
+
   # set groups
   if group is None:
     g += p9.geom_col(p9.aes(x="x", y="y"), fill = ez_colors(1)[0])
@@ -95,7 +114,7 @@ def bar_plot(df,
                             group="factor(group)",
                             fill="factor(group)"),
                      **POSITION_KWARGS[position])
-    g += p9.scale_fill_manual(values=ez_colors(g.n_groups('group')))
+    g += p9.scale_fill_manual(values=colors, reverse=False)
 
   # set facets
   if facet_x is not None and facet_y is None:
@@ -128,8 +147,9 @@ def bar_plot(df,
   g += theme_ez(figure_size = figure_size,
                 base_size = base_size,
                 legend_title=p9.element_text(text=names['group'], size=base_size))
-  if group is not None:
-    g += p9.theme(legend_position = "top", legend_title = p9.element_blank())
+
+  if sort_groups:
+    g+= p9.guides(fill=p9.guide_legend(reverse=True))
 
   return g
 
