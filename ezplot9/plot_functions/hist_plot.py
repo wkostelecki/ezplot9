@@ -6,7 +6,7 @@ from ..utilities.utils import unname
 from ..utilities.labellers import ez_labels
 from ..utilities.colors import ez_colors
 from ..utilities.themes import theme_ez
-from ..utilities.binnnig import bin_data
+from ..utilities.binning import bin_data
 from .ezplot import EZPlot
 
 import logging
