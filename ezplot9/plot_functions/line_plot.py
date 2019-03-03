@@ -6,19 +6,23 @@ from ..utilities.colors import ez_colors
 from ..utilities.themes import theme_ez
 from .ezplot import EZPlot
 
+import pandas as pd
+
+import logging
+log = logging.getLogger(__name__)
 
 def line_plot(df,
               x,
               y,
-              group = None,
-              facet_x = None,
-              facet_y = None,
-              aggfun = 'sum',
-              show_points = False,
-              base_size = 10,
-              figure_size = (6,3)):
+              group=None,
+              facet_x=None,
+              facet_y=None,
+              aggfun='sum',
+              show_points=False,
+              base_size=10,
+              figure_size=(6, 3)):
   '''
-  Aggregates data in df and plots as a line chart.
+  Aggregates data in df and plots multiple columns as a line chart.
 
   Parameters
   ----------
@@ -26,8 +30,8 @@ def line_plot(df,
     input dataframe
   x : str
     quoted expression to be plotted on the x axis
-  y : str
-    quoted expression to be plotted on the y axis
+  y : str or list of str
+    quoted expression(s) to be plotted on the y axis
   group : str
     quoted expression to be used as group (ie color)
   facet_x : str
@@ -50,6 +54,13 @@ def line_plot(df,
 
   '''
 
+  if group is not None and isinstance(y, list) and len(y)>1:
+    log.error("groups can be specified only when a single y column is present")
+    raise ValueError("groups can be specified only when a single y column is present")
+
+  if isinstance(y, list) and len(y)==1:
+    y = y[0]
+
   # create a copy of the data
   dataframe = df.copy()
 
@@ -60,17 +71,41 @@ def line_plot(df,
 
   for label, var in zip(['x', 'group', 'facet_x', 'facet_y'], [x, group, facet_x, facet_y]):
     names[label], groups[label] = unname(var)
-  names['y'], variables['y'] = unname(y)
 
   # fix special cases
   if x == '.index':
     groups['x'] = '.index'
     names['x'] = dataframe.index.name if dataframe.index.name is not None else ''
 
-  # aggregate data and reorder columns
-  gdata = agg_data(dataframe, variables, groups, aggfun, fill_groups=True)
+  if isinstance(y, list):
+
+    ys = []
+    for i, var in enumerate(y):
+      ys.append('y_{}'.format(i))
+      names['y_{}'.format(i)], variables['y_{}'.format(i)] = unname(var)
+
+    # aggregate data
+    tmp_gdata = agg_data(dataframe, variables, groups, aggfun, fill_groups=True)
+    groups_present = [c for c in ['x', 'facet_x', 'facet_y'] if c in tmp_gdata.columns]
+    gdata = pd.melt(tmp_gdata, groups_present, var_name='group', value_name='y')
+    gdata['group'] = gdata['group'].replace({var: names[var] for var in ys})
+
+    # update values for plotting
+    names['y'] = 'Value'
+    names['group'] = 'Variable'
+    group = 'Variable'
+
+  else:
+
+    names['y'], variables['y'] = unname(y)
+
+    # aggregate data
+    gdata = agg_data(dataframe, variables, groups, aggfun, fill_groups=True)
+
+  # reorder columns
   gdata = gdata[[c for c in ['x', 'y', 'group', 'facet_x', 'facet_y'] if c in gdata.columns]]
 
+  # init plot obj
   g = EZPlot(gdata)
 
   # set groups
@@ -112,6 +147,3 @@ def line_plot(df,
                 legend_title=p9.element_text(text=names['group'], size=base_size))
 
   return g
-
-
-
