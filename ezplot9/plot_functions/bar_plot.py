@@ -1,10 +1,11 @@
 import plotnine as p9
 
 import numpy as np
+import pandas as pd
 
 from ..utilities.agg_data import agg_data
 from ..utilities.utils import unname
-from ..utilities.labellers import ez_labels
+from ..utilities.labellers import ez_labels, percent_labels
 from ..utilities.colors import ez_colors
 from ..utilities.themes import theme_ez
 from .ezplot import EZPlot
@@ -15,6 +16,7 @@ log = logging.getLogger(__name__)
 POSITION_KWARGS = {'overlay':{'position':'identity', 'alpha':0.7},
                    'stack':{},
                    'dodge':{'position':'dodge'}}
+EPSILON = 1e-12
 
 def bar_plot(df,
              x,
@@ -23,12 +25,12 @@ def bar_plot(df,
              facet_x = None,
              facet_y = None,
              aggfun = 'sum',
+             fill = False,
              position='stack',
              orientation = 'vertical',
              sort_groups = True,
              base_size = 10,
              figure_size = (6,3)):
-
 
   '''
   Aggregates data in df and plots as a bar chart.
@@ -49,6 +51,8 @@ def bar_plot(df,
     quoted expression to be used as facet
   aggfun : str or fun
     function to be used for aggregating (eg sum, mean, median ...)
+  fill : bool
+      plot shares for each group instead of absolute values
   position : str
     if groups are present, choose between `stack`, `overlay` or `dodge`
   orientation : str
@@ -91,10 +95,24 @@ def bar_plot(df,
   # aggregate data
   gdata = agg_data(dataframe, variables, groups, aggfun, fill_groups=True)
 
+  if fill:
+      groups_to_normalize = [c for c in ['x', 'facet_x', 'facet_y'] if c in gdata.columns]
+      total_values = gdata\
+          .groupby(groups_to_normalize)['y']\
+          .sum()\
+          .reset_index()\
+          .rename(columns = {'y':'tot_y'})
+      gdata = pd.merge(gdata, total_values, on = groups_to_normalize)
+      gdata['y'] = gdata['y'] / (gdata['tot_y'] + EPSILON)
+      gdata.drop('tot_y', axis=1, inplace=True)
+      ylabeller = percent_labels
+  else:
+      ylabeller = ez_labels
+
   g = EZPlot(gdata)
 
   # determine order and create a categorical type
-  if sort_groups:
+  if (group is not None) and sort_groups:
     if g.column_is_categorical('x'):
       g.sort_group('x', 'y', ascending=False)
     g.sort_group('group', 'y')
@@ -102,9 +120,8 @@ def bar_plot(df,
     g.sort_group('facet_y', 'y', ascending=False)
     if groups:
       colors = np.flip(ez_colors(g.n_groups('group')))
-  else:
+  elif (group is not None):
     colors = ez_colors(g.n_groups('group'))
-
 
   # set groups
   if group is None:
@@ -131,7 +148,7 @@ def bar_plot(df,
     g += p9.scale_x_continuous(labels=ez_labels)
 
   # set y scale
-  g += p9.scale_y_continuous(labels=ez_labels,
+  g += p9.scale_y_continuous(labels=ylabeller,
                              expand=[0,0,0.1,0])
 
   # set axis labels
