@@ -1,14 +1,16 @@
 import plotnine as p9
 
 import numpy as np
+import pandas as pd
 
 from ..utilities.agg_data import agg_data
 from ..utilities.utils import unname
-from ..utilities.labellers import ez_labels
+from ..utilities.labellers import ez_labels, percent_labels
 from ..utilities.colors import ez_colors
 from ..utilities.themes import theme_ez
 from .ezplot import EZPlot
 
+EPSILON = 1e-12
 
 def area_plot(df,
               x,
@@ -17,6 +19,7 @@ def area_plot(df,
               facet_x = None,
               facet_y = None,
               aggfun = 'sum',
+              fill = False,
               sort_groups = True,
               base_size = 10,
               figure_size = (6,3)):
@@ -39,6 +42,8 @@ def area_plot(df,
       quoted expression to be used as facet
     aggfun : str or fun
       function to be used for aggregating (eg sum, mean, median ...)
+    fill : bool
+      plot shares for each group instead of absolute values
     sort_groups : bool
       sort groups by the sum of their value (otherwise alphabetical order is used)
     base_size : int
@@ -75,32 +80,45 @@ def area_plot(df,
     gdata['y'].fillna(0, inplace=True)
     gdata = gdata[[c for c in ['x', 'y', 'group', 'facet_x', 'facet_y'] if c in gdata.columns]]
 
+    if fill:
+        groups_to_normalize = [c for c in ['x', 'facet_x', 'facet_y'] if c in gdata.columns]
+        total_values = gdata\
+            .groupby(groups_to_normalize)['y']\
+            .sum()\
+            .reset_index()\
+            .rename(columns = {'y':'tot_y'})
+        gdata = pd.merge(gdata, total_values, on = groups_to_normalize)
+        gdata['y'] = gdata['y'] / (gdata['tot_y'] + EPSILON)
+        gdata.drop('tot_y', axis=1, inplace=True)
+        ylabeller = percent_labels
+    else:
+        ylabeller = ez_labels
+
     # get plot object
     g = EZPlot(gdata)
 
     # determine order and create a categorical type
-    if sort_groups:
+    if (group is not None) and sort_groups:
         g.sort_group('group', 'y')
         g.sort_group('facet_x', 'y', ascending=False)
         g.sort_group('facet_y', 'y', ascending=False)
         if groups:
             colors = np.flip(ez_colors(g.n_groups('group')))
-    else:
+    elif (group is not None):
         colors = ez_colors(g.n_groups('group'))
 
     # set groups
     if group is None:
         g += p9.geom_area(p9.aes(x="x", y="y"),
-                          colour = ez_colors(1)[0],
+                          colour = None,
                           fill = ez_colors(1)[0],
                           na_rm=True)
     else:
         g += p9.geom_area(p9.aes(x="x", y="y",
                                  group="factor(group)",
-                                 colour="factor(group)",
                                  fill="factor(group)"),
+                          colour=None,
                           na_rm=True)
-        g += p9.scale_color_manual(values=colors)
         g += p9.scale_fill_manual(values=colors)
 
     # set facets
@@ -118,7 +136,7 @@ def area_plot(df,
         g += p9.scale_x_continuous(labels=ez_labels)
 
     # set y scale
-    g += p9.scale_y_continuous(labels=ez_labels)
+    g += p9.scale_y_continuous(labels=ylabeller)
 
     # set axis labels
     g += \
