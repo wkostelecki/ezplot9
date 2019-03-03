@@ -82,10 +82,10 @@ def area_plot(df,
 
     if fill:
         groups_to_normalize = [c for c in ['x', 'facet_x', 'facet_y'] if c in gdata.columns]
-        total_values = gdata\
-            .groupby(groups_to_normalize)['y']\
-            .sum()\
-            .reset_index()\
+        total_values = gdata \
+            .groupby(groups_to_normalize)['y'] \
+            .sum() \
+            .reset_index() \
             .rename(columns = {'y':'tot_y'})
         gdata = pd.merge(gdata, total_values, on = groups_to_normalize)
         gdata['y'] = gdata['y'] / (gdata['tot_y'] + EPSILON)
@@ -136,7 +136,8 @@ def area_plot(df,
         g += p9.scale_x_continuous(labels=ez_labels)
 
     # set y scale
-    g += p9.scale_y_continuous(labels=ylabeller)
+    g += p9.scale_y_continuous(labels=ylabeller,
+                               expand=[0,0,0.1,0])
 
     # set axis labels
     g += \
@@ -149,7 +150,7 @@ def area_plot(df,
                   legend_title=p9.element_text(text=names['group'], size=base_size))
 
     if sort_groups:
-      g+= p9.guides(fill=p9.guide_legend(reverse=True), color=p9.guide_legend(reverse=True))
+        g+= p9.guides(fill=p9.guide_legend(reverse=True), color=p9.guide_legend(reverse=True))
 
     return g
 
