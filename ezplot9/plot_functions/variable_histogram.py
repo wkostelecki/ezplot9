@@ -123,19 +123,19 @@ def variable_histogram(df,
         # aggregate data
         groups = {g:g for g in non_x_groups}
         groups[x] = x
-        df = agg_data(tmp_df, variables, groups, 'sum', fill_groups=True)
-        df.fillna(0, inplace=True)
-        df['facet_x']=names[x]
-        df.rename(columns={x:'x'}, inplace=True)
+        single_df = agg_data(tmp_df, variables, groups, 'sum', fill_groups=True)
+        single_df.fillna(0, inplace=True)
+        single_df['facet_x']=names[x]
+        single_df.rename(columns={x:'x'}, inplace=True)
 
         # normalize
         if normalize:
             if len(non_x_groups)==0:
-                df['w'] = df['w']/(df['w'].sum()*bin_width_x[x])
+                single_df['w'] = single_df['w']/(single_df['w'].sum()*bin_width_x[x])
             else:
-                df['w'] = df.groupby(non_x_groups)['w'].apply(lambda z: z/(z.sum()*bin_width_x[x]))
+                single_df['w'] = single_df.groupby(non_x_groups)['w'].apply(lambda z: z/(z.sum()*bin_width_x[x]))
 
-        df_ls.append(df)
+        df_ls.append(single_df)
     gdata = pd.concat(df_ls)
     gdata = gdata[[c for c in ['x', 'w', 'group', 'facet_x', 'facet_y'] if c in gdata.columns]]
 
@@ -143,11 +143,10 @@ def variable_histogram(df,
     g = EZPlot(gdata)
 
     # set groups
-    for x in xs:
-        var = names[x]
+    for single_df in df_ls:
         if group is None:
             g += p9.geom_bar(p9.aes(x="x", y="w"),
-                             data=gdata.query('facet_x==@var'),
+                             data=single_df,
                              stat = 'identity',
                              colour = None,
                              fill = ez_colors(1)[0])
@@ -155,7 +154,7 @@ def variable_histogram(df,
             g += p9.geom_bar(p9.aes(x="x", y="w",
                                     group="factor(group)",
                                     fill="factor(group)"),
-                             data=gdata.query('facet_x==@var'),
+                             data=single_df,
                              colour=None,
                              stat = 'identity',
                              **POSITION_KWARGS[position])
