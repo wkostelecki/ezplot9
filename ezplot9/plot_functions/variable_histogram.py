@@ -68,6 +68,7 @@ def variable_histogram(df,
     '''
 
     # TODO: performance improvement
+    # TODO: add support for categorical variables in x
 
     if position not in ['overlay', 'stack', 'dodge']:
         log.error("position not recognized")
@@ -80,6 +81,9 @@ def variable_histogram(df,
     if (bins is not None) and (bin_width is not None):
         log.error("Only one between bins or bin_with should be defined")
         raise ValueError("Only one between  bins or bin_with should be defined")
+
+    if isinstance(x, str):
+        x=[x]
 
     # create a copy of the data
     dataframe = df.copy()
