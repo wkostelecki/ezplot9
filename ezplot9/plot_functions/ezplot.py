@@ -79,7 +79,7 @@ class EZPlot(p9.ggplot):
                 .sum() \
                 .reset_index() \
                 .sort_values(var_col, ascending=ascending)[group_col] \
-                .to_list()
+                .tolist()
 
             group_cat = CategoricalDtype(categories=[str(v) for v in group_order_list], ordered=True)
             self.data[group_col] = self.data[group_col].astype(str).astype(group_cat)
