@@ -87,7 +87,10 @@ def bar_plot(df,
         raise NotImplementedError("label_pos not recognized")
     elif label_pos=='auto':
         if position=='stack':
-            label_pos = 'both'
+            if fill:
+                label_pos='inside'
+            else:
+                label_pos = 'both'
         elif position == 'dodge':
             label_pos = 'top'
         elif position == 'overlay':
