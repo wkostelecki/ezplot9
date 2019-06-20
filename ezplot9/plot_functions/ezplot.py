@@ -3,7 +3,7 @@ import numpy as np
 import datetime
 import pandas as pd
 
-from pandas.api.types import CategoricalDtype, is_categorical
+from pandas.api.types import CategoricalDtype, is_categorical, is_bool_dtype
 
 import logging
 log = logging.getLogger(__name__)
@@ -32,7 +32,9 @@ class EZPlot(p9.ggplot):
             log.error('{} is not present in the data'.format(col))
             raise ValueError('{} is not present in the data'.format(col))
         else:
-            return (self.data[col].dtypes == np.dtype('O')) or is_categorical(self.data[col].dtypes)
+            return (self.data[col].dtypes == np.dtype('O')) \
+                   or is_bool_dtype(self.data[col].dtypes)\
+                   or is_categorical(self.data[col].dtypes)
 
     def column_is_timestamp(self, col):
         '''
