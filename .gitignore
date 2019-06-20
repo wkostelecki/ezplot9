@@ -84,3 +84,4 @@ venv.bak/
 .mypy_cache/
 .Rproj.user
 .Rhistory
+.vscode
