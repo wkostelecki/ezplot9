@@ -71,7 +71,10 @@ class EZPlot(p9.ggplot):
             number of unique values
 
         '''
-        return len(self.data[col].unique())
+        if col in self.data.columns:
+            return len(self.data[col].unique())
+        else:
+            return 1
 
     def sort_group(self, group_col, var_col, ascending=True):
         if group_col in self.data.columns:

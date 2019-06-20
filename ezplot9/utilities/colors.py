@@ -88,3 +88,11 @@ def display_colors(colors):
 
     return fig
 
+def text_contrast(col):
+    if isinstance(col, str):
+        if np.array(mpl.colors.to_rgb(col)).mean()>=0.5:
+            return "#000000"
+        else:
+            return "#FFFFFF"
+    else:
+        return [text_contrast(c) for c in col]
