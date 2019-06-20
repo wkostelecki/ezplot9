@@ -76,7 +76,7 @@ def scatter_plot(df,
 
     # set groups
     if group is None:
-        g += p9.geom_point(p9.aes(x="x", y="y", group="factor(group)"),
+        g += p9.geom_point(p9.aes(x="x", y="y"),
                            colour = ez_colors(1)[0], **kwargs)
     else:
         g += p9.geom_point(p9.aes(x="x", y="y", group="factor(group)", color="factor(group)"), **kwargs)
