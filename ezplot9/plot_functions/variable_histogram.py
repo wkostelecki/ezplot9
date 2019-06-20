@@ -26,7 +26,6 @@ def variable_histogram(df,
                        bin_width = None,
                        position = 'stack',
                        normalize = False,
-                       sort_groups=True,
                        base_size=10,
                        figure_size=(6, 3)):
 
@@ -53,8 +52,6 @@ def variable_histogram(df,
       if groups are present, choose between `stack`, `overlay` or `dodge`
     normalize : bool
       normalize histogram counts
-    sort_groups : bool
-      sort groups by the sum of their value (otherwise alphabetical order is used)
     base_size : int
       base size for theme_ez
     figure_size :tuple of int
@@ -182,7 +179,6 @@ def variable_histogram(df,
                   base_size=base_size,
                   legend_title=p9.element_text(text=names['group'], size=base_size))
 
-    if sort_groups:
-        g += p9.guides(fill=p9.guide_legend(reverse=True))
+    g += p9.guides(fill=p9.guide_legend(reverse=True))
 
     return g
