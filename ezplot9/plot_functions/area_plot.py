@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from ..utilities.agg_data import agg_data
-from ..utilities.utils import unname
+from ..utilities.utils import unname, sort_data_groups
 from ..utilities.labellers import ez_labels, percent_labels
 from ..utilities.colors import ez_colors
 from ..utilities.themes import theme_ez
@@ -98,14 +98,11 @@ def area_plot(df,
     g = EZPlot(gdata)
 
     # determine order and create a categorical type
-    if (group is not None) and sort_groups:
-        g.sort_group('group', 'y')
-        g.sort_group('facet_x', 'y', ascending=False)
-        g.sort_group('facet_y', 'y', ascending=False)
-        if groups:
-            colors = np.flip(ez_colors(g.n_groups('group')))
-    elif (group is not None):
-        colors = ez_colors(g.n_groups('group'))
+    if sort_groups:
+        sort_data_groups(g)
+
+    # get colors
+    colors = np.flip(ez_colors(g.n_groups('group')))
 
     # set groups
     if group is None:
@@ -137,7 +134,7 @@ def area_plot(df,
 
     # set y scale
     g += p9.scale_y_continuous(labels=ylabeller,
-                               expand=[0,0,0.1,0])
+                               expand=[0,0,0.1*(not fill)+0.03,0])
 
     # set axis labels
     g += \

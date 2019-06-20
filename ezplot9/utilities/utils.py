@@ -56,3 +56,11 @@ def unname(x):
             name=x.replace(' ', '')
 
     return name, var
+
+def sort_data_groups(g):
+    # determine order and create a categorical type
+    if g.column_is_categorical('x'):
+        g.sort_group('x', 'y', ascending=False)
+    g.sort_group('group', 'y')
+    g.sort_group('facet_x', 'y', ascending=False)
+    g.sort_group('facet_y', 'y', ascending=False)
