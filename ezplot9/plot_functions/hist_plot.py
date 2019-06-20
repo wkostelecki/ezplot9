@@ -145,7 +145,7 @@ def hist_plot(df,
     # start plotting
     g = EZPlot(gdata)
     # determine order and create a categorical type
-    if sort_groups:
+    if (group is not None) and sort_groups:
         if g.column_is_categorical('x'):
             g.sort_group('x', 'w', ascending=False)
         g.sort_group('group', 'w')
@@ -153,7 +153,7 @@ def hist_plot(df,
         g.sort_group('facet_y', 'w', ascending=False)
         if groups:
             colors = np.flip(ez_colors(g.n_groups('group')))
-    else:
+    elif (group is not None):
         colors = ez_colors(g.n_groups('group'))
 
     if y is None:
