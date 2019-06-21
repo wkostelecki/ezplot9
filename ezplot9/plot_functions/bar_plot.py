@@ -168,7 +168,7 @@ def bar_plot(df,
                               data = top_labels,
                               color = "#000000",
                               size=base_size*0.7,
-                              va='bottom')
+                              va='bottom' if position=='vertical' else 'right')
         else:
             top_labels = g.data.copy()
             top_labels['top_label_ypos'] = top_labels['y']
