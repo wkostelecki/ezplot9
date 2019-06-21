@@ -168,8 +168,8 @@ def bar_plot(df,
                               data = top_labels,
                               color = "#000000",
                               size=base_size*0.7,
-                              ha = 'center' if position=='vertical' else 'left',
-                              va='bottom' if position=='vertical' else 'center')
+                              ha = 'center' if position =='vertical' else 'left',
+                              va = 'bottom' if position =='vertical' else 'center')
         else:
             top_labels = g.data.copy()
             top_labels['top_label_ypos'] = top_labels['y']
@@ -180,8 +180,8 @@ def bar_plot(df,
                               data = top_labels,
                               color = "#000000",
                               size=base_size*0.7,
-                              ha='center' if position == 'vertical' else 'left',
-                              va='bottom' if position=='vertical' else 'center',
+                              ha = 'center' if position == 'vertical' else 'left',
+                              va = 'bottom' if position =='vertical' else 'center',
                               position=p9.position_dodge(1))
 
     if (label_pos in ['inside', 'both']) & (position == 'stack'):
