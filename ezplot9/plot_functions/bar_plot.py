@@ -179,7 +179,7 @@ def bar_plot(df,
                               data = top_labels,
                               color = "#000000",
                               size=base_size*0.7,
-                              va='bottom',
+                              va='bottom' if position=='vertical' else 'right',
                               position=p9.position_dodge(1))
 
     if (label_pos in ['inside', 'both']) & (position == 'stack'):
