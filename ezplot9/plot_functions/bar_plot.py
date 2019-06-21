@@ -168,7 +168,7 @@ def bar_plot(df,
                               data = top_labels,
                               color = "#000000",
                               size=base_size*0.7,
-                              ha = 'center' if position=='vertical' else 'right',
+                              ha = 'center' if position=='vertical' else 'left',
                               va='bottom' if position=='vertical' else 'center')
         else:
             top_labels = g.data.copy()
@@ -180,7 +180,7 @@ def bar_plot(df,
                               data = top_labels,
                               color = "#000000",
                               size=base_size*0.7,
-                              ha='center' if position == 'vertical' else 'right',
+                              ha='center' if position == 'vertical' else 'left',
                               va='bottom' if position=='vertical' else 'center',
                               position=p9.position_dodge(1))
 
