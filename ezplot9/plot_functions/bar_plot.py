@@ -90,7 +90,10 @@ def bar_plot(df,
             if fill:
                 label_pos='inside'
             else:
-                label_pos = 'both'
+                if group is None:
+                    label_pos = 'top'
+                else:
+                    label_pos = 'both'
         elif position == 'dodge':
             label_pos = 'top'
         elif position == 'overlay':
