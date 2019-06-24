@@ -173,7 +173,7 @@ def bar_plot(df,
                               size=base_size*0.7,
                               ha = 'center' if orientation =='vertical' else 'left',
                               va = 'bottom' if orientation =='vertical' else 'center')
-        else:
+        elif position=='dodge':
             top_labels = g.data.copy()
             top_labels['top_label_ypos'] = top_labels['y']
             top_labels['top_label'] = label_function(top_labels['top_label_ypos'])
@@ -185,7 +185,7 @@ def bar_plot(df,
                               size=base_size*0.7,
                               ha = 'center' if orientation == 'vertical' else 'left',
                               va = 'bottom' if orientation =='vertical' else 'center',
-                              position=p9.position_dodge(1))
+                              position=p9.position_dodge(0.9))
 
     if (label_pos in ['inside', 'both']) & (position == 'stack'):
         groups_to_sum = [c for c in ['x', 'facet_x', 'facet_y'] if c in gdata.columns]
