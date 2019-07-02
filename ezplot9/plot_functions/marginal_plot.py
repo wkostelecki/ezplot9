@@ -29,12 +29,43 @@ def marginal_plot(df,
                   figure_size=(6, 3)):
 
     '''
+    Bin the data in a df and plot it using lines.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+      input dataframe
+    x : str
+      quoted expression to be plotted on the x axis
+    y : str
+      quoted expression to be plotted on the y axis
+    group : str
+      quoted expression to be used as group (ie color)
+    facet_x : str
+      quoted expression to be used as facet
+    facet_y : str
+      quoted expression to be used as facet
+    aggfun : str or fun
+      function to be used for aggregating (eg sum, mean, median ...)
+    bins : int or tuple
+      number of bins to be used
+    use_quantiles : bool
+      bin data using quantiles
+    label_pos : str
+      Use count label on each point. Choose between None, 'auto' or 'force'
+    label_function : callable
+      labelling function
+    sort_groups : bool
+      sort groups by the sum of their value (otherwise alphabetical order is used)
+    base_size : int
+      base size for theme_ez
+    figure_size :tuple of int
+      figure size
 
     Returns
     -------
     g : EZPlot
       EZplot object
-
     '''
 
     if label_pos not in [None, 'auto', 'force']:
