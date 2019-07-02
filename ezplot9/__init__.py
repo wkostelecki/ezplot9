@@ -5,5 +5,6 @@ from ezplot9.plot_functions.box_plot import box_plot
 from ezplot9.plot_functions.scatter_plot import scatter_plot
 from ezplot9.plot_functions.area_plot import area_plot
 from ezplot9.plot_functions.variable_histogram import variable_histogram
+from ezplot9.plot_functions.marginal_plot import marginal_plot
 
 from ezplot9.utilities.labellers import percent_labels, ez_labels, bp_labels, money_labels
