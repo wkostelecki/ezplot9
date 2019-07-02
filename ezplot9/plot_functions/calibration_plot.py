@@ -49,4 +49,7 @@ def calibration_plot(df,
                       color = '#696969',
                       linetype = 'dashed')
 
+    g += p9.xlab('Confidence') + \
+         p9.ylab('Fraction of positives')
+
     return g
