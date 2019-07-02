@@ -138,12 +138,12 @@ def marginal_plot(df,
     # set labels
     if show_labels:
         groups_to_count = [c for c in tmp_df.columns if c in ['x', 'group', 'facet_x', 'facet_y']]
-        tmp_df['label']=1
+        tmp_df['counts']=1
         top_labels = tmp_df \
-            .groupby(groups_to_count)['label'] \
+            .groupby(groups_to_count)['counts'] \
             .sum()\
             .reset_index()
-        top_labels['label'] = label_function(top_labels['label'])
+        top_labels['label'] = label_function(top_labels['counts'])
         
         # make sure labels and  data can be joined
         for c in ['group', 'facet_x', 'facet_y']:
