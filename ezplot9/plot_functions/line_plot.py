@@ -110,9 +110,9 @@ def line_plot(df,
 
   # set groups
   if group is None:
-    g += p9.geom_line(p9.aes(x="x", y="y"), colour = ez_colors(1)[0])
+    g += p9.geom_line(p9.aes(x="x", y="y"), group=1, colour = ez_colors(1)[0])
     if show_points:
-      g += p9.geom_point(p9.aes(x="x", y="y"), colour = ez_colors(1)[0])
+      g += p9.geom_point(p9.aes(x="x", y="y"), group=1, colour = ez_colors(1)[0])
   else:
     g += p9.geom_line(p9.aes(x="x", y="y", group="factor(group)", colour="factor(group)"))
     if show_points:

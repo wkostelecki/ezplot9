@@ -87,7 +87,13 @@ def bar_plot(df,
         raise NotImplementedError("label_pos not recognized")
     elif label_pos=='auto':
         if position=='stack':
-            label_pos = 'both'
+            if fill:
+                label_pos='inside'
+            else:
+                if group is None:
+                    label_pos = 'top'
+                else:
+                    label_pos = 'both'
         elif position == 'dodge':
             label_pos = 'top'
         elif position == 'overlay':
@@ -165,8 +171,9 @@ def bar_plot(df,
                               data = top_labels,
                               color = "#000000",
                               size=base_size*0.7,
-                              va='bottom')
-        else:
+                              ha = 'center' if orientation =='vertical' else 'left',
+                              va = 'bottom' if orientation =='vertical' else 'center')
+        elif position=='dodge':
             top_labels = g.data.copy()
             top_labels['top_label_ypos'] = top_labels['y']
             top_labels['top_label'] = label_function(top_labels['top_label_ypos'])
@@ -176,8 +183,9 @@ def bar_plot(df,
                               data = top_labels,
                               color = "#000000",
                               size=base_size*0.7,
-                              va='bottom',
-                              position=p9.position_dodge(1))
+                              ha = 'center' if orientation == 'vertical' else 'left',
+                              va = 'bottom' if orientation =='vertical' else 'center',
+                              position=p9.position_dodge(0.9))
 
     if (label_pos in ['inside', 'both']) & (position == 'stack'):
         groups_to_sum = [c for c in ['x', 'facet_x', 'facet_y'] if c in gdata.columns]
