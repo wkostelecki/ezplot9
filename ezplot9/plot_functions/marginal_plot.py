@@ -147,7 +147,7 @@ def marginal_plot(df,
         
         # make sure labels and  data can be joined
         for c in ['group', 'facet_x', 'facet_y']:
-            if c in tmp_df.columns and :
+            if c in tmp_df.columns:
                 try:
                     top_labels[c] = pd.Categorical(top_labels[c].astype(str),
                                                    categories = g.data[c].cat.categories,
