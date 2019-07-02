@@ -41,3 +41,28 @@ def bin_data(x,
     binned_x = binned_x.astype(float)
 
     return binned_x, bins, bin_width
+
+def qbin_data(x,
+              n_quantiles=20):
+    '''
+    Bin the values of a vector according to its quantiles
+
+    Parameters
+    ----------
+    x : array
+        vector to be binned
+    n_quantiles : int
+        number of quantiles to be used
+
+    Returns
+    -------
+    binned_x : array
+        binnded version of the input
+
+    '''
+
+    binned_x = pd.cut(x, bins=n_quantiles, labels=bins_labels)
+    rename_dict = {c:c.mid for c in binned_x.cat.categories.tolist()}
+    binned_x = binned_x.cat.rename_categories(rename_dict).astype(float)
+
+    return binned_x
