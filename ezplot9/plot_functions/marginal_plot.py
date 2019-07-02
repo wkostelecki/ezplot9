@@ -1,8 +1,9 @@
 import plotnine as p9
 import numpy as np
+import pandas as pd
 
 from ..utilities.agg_data import agg_data
-from ..utilities.utils import unname
+from ..utilities.utils import unname, sort_data_groups
 from ..utilities.labellers import ez_labels
 from ..utilities.colors import ez_colors
 from ..utilities.themes import theme_ez
@@ -40,7 +41,7 @@ def marginal_plot(df,
         log.error("label_pos not recognized")
         raise NotImplementedError("label_pos not recognized")
     elif label_pos == 'auto':
-        if bins<=20:
+        if bins<=21 and group is None:
             show_labels=True
         else:
             show_labels=False
@@ -55,7 +56,7 @@ def marginal_plot(df,
     groups = {}
     variables = {}
 
-    for label, var in zip(['x', 'y', 'group', 'facet_x', 'facet_y'], [x, y, group, facet_x, facet_y]):
+    for label, var in zip(['x', 'group', 'facet_x', 'facet_y'], [x,  group, facet_x, facet_y]):
         names[label], groups[label] = unname(var)
     names['y'], variables['y'] = unname(y)
 
@@ -77,7 +78,7 @@ def marginal_plot(df,
         tmp_df['x'], _, _ = bin_data(tmp_df['x'], bins, None)
 
     # aggregate data and reorder columns
-    gdata = agg_data(tmp_df, new_variables, new_groups, aggfun, fill_groups=True)
+    gdata = agg_data(tmp_df, new_variables, new_groups, aggfun, fill_groups=False)
 
     # reorder columns
     gdata = gdata[[c for c in ['x', 'y', 'group', 'facet_x', 'facet_y'] if c in gdata.columns]]
@@ -94,39 +95,50 @@ def marginal_plot(df,
 
     # set groups
     if group is None:
-        g += p9.geom_line(p9.aes(x="x", y="y"), group=1, colour=colors)
+        g += p9.geom_line(p9.aes(x="x", y="y"), group=1, colour=colors[0])
         if show_labels:
-            g += p9.geom_point(p9.aes(x="x", y="y"), group=1, colour=colors)
+            g += p9.geom_point(p9.aes(x="x", y="y"), group=1, colour=colors[0])
     else:
         g += p9.geom_line(p9.aes(x="x", y="y", group="factor(group)", colour="factor(group)"))
         if show_labels:
             g += p9.geom_point(p9.aes(x="x", y="y", colour="factor(group)"))
         g += p9.scale_color_manual(values=colors)
 
+    # set labels
+    if show_labels:
+        groups_to_count = [c for c in tmp_df.columns if c in ['x', 'group', 'facet_x', 'facet_y']]
+        tmp_df['label']=1
+        top_labels = tmp_df \
+            .groupby(groups_to_count)['label'] \
+            .sum()\
+            .reset_index()
+        top_labels['label'] = label_function(top_labels['label'])
+        
+        # make sure labels and  data can be joined
+        for c in ['group', 'facet_x', 'facet_y']:
+            if c in tmp_df.columns and :
+                try:
+                    top_labels[c] = pd.Categorical(top_labels[c].astype(str),
+                                                   categories = g.data[c].cat.categories,
+                                                   ordered = g.data[c].cat.ordered)
+                except:
+                    pass
+        #return g.data, top_labels
+        g.data = pd.merge(g.data, top_labels, on=groups_to_count, how='left')
+        g.data['label_pos'] = g.data['y'] + \
+                    np.sign(g.data['y'])*g.data['y'].abs().max()*0.02
+
+        g += p9.geom_text(p9.aes(x='x', y='label_pos', label='label'),
+                          color="#000000",
+                          size=base_size * 0.7,
+                          ha='center',
+                          va='bottom')
     # set facets
     if facet_x is not None and facet_y is None:
         g += p9.facet_wrap('~facet_x')
     if facet_x is not None and facet_y is not None:
         g += p9.facet_grid('facet_y~facet_x')
-
-    # set labels
-    if show_labels:
-        groups_to_count = [c for c in tmp_df.columns if c in ['x', 'group', 'facet_x', 'facet_y']]
-        top_labels = tmp_df \
-            .groupby(groups_to_sum) \
-            .shape() \
-            .to_frame('label')\
-            .reset_index()
-        top_labels['label'] = label_function(top_labels['label'])
-        top_labels = pd.merge(top_labels, g.data, on=groups_to_count, how='left')
-
-        g += p9.geom_text(p9.aes(x='x', y='y', label='label'),
-                          data=top_labels,
-                          color="#000000",
-                          size=base_size * 0.7,
-                          ha='center',
-                          va='bottom')
-
+        
     # set x scale
     if g.column_is_timestamp('x'):
         g += p9.scale_x_datetime()

@@ -61,8 +61,12 @@ def qbin_data(x,
 
     '''
 
-    binned_x = pd.cut(x, bins=n_quantiles, labels=bins_labels)
-    rename_dict = {c:c.mid for c in binned_x.cat.categories.tolist()}
+    binned_x = pd.qcut(x, q=n_quantiles)
+    rename_dict = \
+        pd.DataFrame({'x':x, 'q_x':binned_x})\
+        .groupby('q_x')['x']\
+        .mean()\
+        .to_dict()
     binned_x = binned_x.cat.rename_categories(rename_dict).astype(float)
 
     return binned_x
