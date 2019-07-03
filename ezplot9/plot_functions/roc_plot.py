@@ -1,14 +1,16 @@
 import plotnine as p9
 from ..utilities.agg_data import agg_data
 from ..utilities.utils import unname
-from ..utilities.labellers import ez_labels
+from ..utilities.labellers import percent_labels
 from ..utilities.colors import ez_colors
 from ..utilities.themes import theme_ez
 from .ezplot import EZPlot
+from .line_plot import line_plot
 
 from sklearn.metrics import auc, roc_curve
 
 import pandas as pd
+import numpy as np
 
 import logging
 log = logging.getLogger(__name__)
@@ -25,15 +27,13 @@ def compute_roc_params(target, prob, pos_label):
         .first() \
         .reset_index()
 
-    auc_df = pd.DataFrame({'auc':auc_value})
+    auc_df = pd.DataFrame({'auc':auc_value}, index = [0])
     return roc_df, auc_df
 
 def roc_plot(df,
              target,
              prob,
              group=None,
-             facet_x=None,
-             facet_y=None,
              pos_label=1,
              show_points=False,
              base_size=10,
@@ -51,10 +51,6 @@ def roc_plot(df,
       column(s) with probabilities
     group : str
       quoted expression to be used as group (ie color)
-    facet_x : str
-      quoted expression to be used as facet
-    facet_y : str
-      quoted expression to be used as facet
     show_points : bool
       show/hide markers
     base_size : int
@@ -69,6 +65,8 @@ def roc_plot(df,
 
     '''
 
+    x=target
+    y=prob
     if group is not None and isinstance(y, list) and len(y) > 1:
         log.error("groups can be specified only when a single y column is present")
         raise ValueError("groups can be specified only when a single y column is present")
@@ -84,7 +82,7 @@ def roc_plot(df,
     groups = {}
     variables = {}
 
-    for label, var in zip(['x', 'group', 'facet_x', 'facet_y'], [x, group, facet_x, facet_y]):
+    for label, var in zip(['x', 'group'], [x, group]):
         names[label], groups[label] = unname(var)
 
     # fix special cases
@@ -100,10 +98,10 @@ def roc_plot(df,
             names['y_{}'.format(i)], variables['y_{}'.format(i)] = unname(var)
 
         # aggregate data
-        tmp_gdata = agg_data(dataframe, variables, groups, None, fill_groups=False)
-        groups_present = [c for c in ['x', 'facet_x', 'facet_y'] if c in tmp_gdata.columns]
-        gdata = pd.melt(tmp_gdata, groups_present, var_name='group', value_name='y')
-        gdata['group'] = gdata['group'].replace({var: names[var] for var in ys})
+        tmp_data = agg_data(dataframe, variables, groups, None, fill_groups=True)
+        groups_present = [c for c in ['x'] if c in tmp_data.columns]
+        data = pd.melt(tmp_data, groups_present, var_name='group', value_name='y')
+        data['group'] = data['group'].replace({var: names[var] for var in ys})
 
         # update values for plotting
         names['y'] = 'Value'
@@ -115,45 +113,55 @@ def roc_plot(df,
         names['y'], variables['y'] = unname(y)
 
         # aggregate data
-        gdata = agg_data(dataframe, variables, groups, None, fill_groups=False)
+        data = agg_data(dataframe, variables, groups, None, fill_groups=True)
 
     # add fake group column if group is not present
-    if not ('group' in gdata.columns):
-        gdata['group'] = '.'
+    if not ('group' in data.columns):
+        data['group'] = ''
 
     # reorder columns
-    data = data[[c for c in ['x', 'y', 'group', 'facet_x', 'facet_y'] if c in gdata.columns]]
+    data = data[[c for c in ['x', 'y', 'group'] if c in data.columns]]
 
     # compute roc curve parameters
-    groups = [c for c in ['x', 'y', 'group', 'facet_x', 'facet_y'] if c in gdata.columns]
     roc_dfs = {}
     auc_dfs = {}
-    for g_name, g_df in data.groupby(groups):
+    for g_name, g_df in data.groupby('group'):
         roc_dfs[g_name], auc_dfs[g_name] = compute_roc_params(g_df['x'], g_df['y'], pos_label)
 
-    roc_df = pd.concat(roc_dfs, names = groups) \
-        .reset_index()[['x', 'y']+groups]
-    auc_df = pd.concat(auc_dfs, names = groups) \
-        .reset_index()[['auc']+groups]
+    roc_df = pd.concat(roc_dfs, names = ['group']) \
+        .reset_index()[['x', 'y', 'group']]
+    auc_df = pd.concat(auc_dfs, names = ['group']) \
+        .reset_index()[['auc', 'group']]
+    auc_df['label'] = auc_df['auc'].apply(lambda x: '{:.3f}'.format(x))
+    auc_df['tmp'] = -1
+    # init plot obj
+    g = EZPlot(roc_df)
 
-    g = line_plot(roc_df,
-                  x = 'x',
-                  y = 'y',
-                  group = names['group'] + '= group' if group is not None else None,
-                  facet_x = 'facet_x' if facet_x is not None else None,
-                  facet_y = 'facet_y' if facet_y is not None else None,
-                  aggfun = None,
-                  show_points = False,
-                  base_size = base_size,
-                  figure_size = figure_size)
+    # set groups
+    if group is None:
+        g += p9.geom_line(p9.aes(x="x", y="y"), group=1, colour=ez_colors(1)[0])
+    else:
+        g += p9.geom_line(p9.aes(x="x", y="y", group="factor(group)", colour="factor(group)"))
+        g += p9.scale_color_manual(values=ez_colors(g.n_groups('group')), name = names['group'])
+        
     g += p9.geom_line(p9.aes(x='guide_x', y='guide_y'),
                       data=pd.DataFrame(data={'guide_x':[0,1], 'guide_y':[0,1]}),
                       color = '#696969',
                       linetype = 'dashed')
-
+    
     g += p9.xlab('False Positive Rate') + \
          p9.ylab('True Positive Rate')
-
+    
+    g += p9.scale_x_continuous(labels=percent_labels, limits=[0,1])
+    g += p9.scale_y_continuous(labels=percent_labels, limits=[0,1])
+    
+    g+=p9.geom_point(p9.aes(x='tmp', y='tmp', fill = 'label'), data = auc_df, stroke=0, size=4)
+    
+    # set theme
+    g += theme_ez(figure_size = figure_size,
+                    base_size = base_size)
+    g+=p9.scale_fill_manual(values=ez_colors(g.n_groups('group')), name = 'AUC')
+        
     return g, auc_df
 
 
