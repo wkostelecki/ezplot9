@@ -121,7 +121,6 @@ def roc_plot(df,
 
     # reorder columns and categories
     data = data[[c for c in ['x', 'y', 'group'] if c in data.columns]]
-    data['group'] = pd.Categorical(data['group'])
 
     # compute roc curve parameters
     roc_dfs = {}
@@ -131,12 +130,23 @@ def roc_plot(df,
 
     roc_df = pd.concat(roc_dfs, names = ['group']) \
         .reset_index()[['x', 'y', 'group']]
+    roc_df['group'] = pd.Categorical(roc_df['group'], ordered=True)
 
     auc_df = pd.concat(auc_dfs, names = ['group']) \
         .reset_index()[['auc', 'group']]
 
     auc_df['label'] = auc_df['auc'].apply(lambda x: '{:.3f}'.format(x))
     auc_df['tmp'] = -1
+    
+    # fix group order
+    auc_df['group'] = pd.Categorical(auc_df['group'],
+                                     categories = roc_df['group'].cat.categories,
+                                     ordered=True)
+    group_2_auc = auc_df[['group', 'label']].set_index('group').to_dict('index')
+    label_categories = [group_2_auc[c]['label'] for c in roc_df['group'].cat.categories]
+    auc_df['label'] =  pd.Categorical(auc_df['label'],
+                                      categories = label_categories,
+                                      ordered=True)
 
     # init plot obj
     g = EZPlot(roc_df)
