@@ -130,10 +130,13 @@ def roc_plot(df,
 
     roc_df = pd.concat(roc_dfs, names = ['group']) \
         .reset_index()[['x', 'y', 'group']]
+
     auc_df = pd.concat(auc_dfs, names = ['group']) \
         .reset_index()[['auc', 'group']]
+
     auc_df['label'] = auc_df['auc'].apply(lambda x: '{:.3f}'.format(x))
     auc_df['tmp'] = -1
+
     # init plot obj
     g = EZPlot(roc_df)
 
@@ -155,12 +158,12 @@ def roc_plot(df,
     g += p9.scale_x_continuous(labels=percent_labels, limits=[0,1])
     g += p9.scale_y_continuous(labels=percent_labels, limits=[0,1])
     
-    g+=p9.geom_point(p9.aes(x='tmp', y='tmp', fill = 'label'), data = auc_df, stroke=0, size=4)
-    
+    g+=p9.geom_point(p9.aes(x='tmp', y='tmp', fill = 'label', group='group'), data = auc_df, stroke=0, size=4)
+    g+=p9.scale_fill_manual(values=ez_colors(g.n_groups('group')), name = 'AUC')
+
     # set theme
     g += theme_ez(figure_size = figure_size,
                     base_size = base_size)
-    g+=p9.scale_fill_manual(values=ez_colors(g.n_groups('group')), name = 'AUC')
         
     return g, auc_df
 
