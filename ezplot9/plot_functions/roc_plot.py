@@ -158,7 +158,7 @@ def roc_plot(df,
     g += p9.scale_x_continuous(labels=percent_labels, limits=[0,1])
     g += p9.scale_y_continuous(labels=percent_labels, limits=[0,1])
     
-    g+=p9.geom_point(p9.aes(x='tmp', y='tmp', fill = 'label', group='group'), data = auc_df, stroke=0, size=4)
+    g+=p9.geom_point(p9.aes(x='tmp', y='tmp', fill = 'label', group='factor(group)'), data = auc_df, stroke=0, size=4)
     g+=p9.scale_fill_manual(values=ez_colors(g.n_groups('group')), name = 'AUC')
 
     # set theme
