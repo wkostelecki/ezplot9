@@ -20,12 +20,13 @@ def compute_roc_params(target, prob, pos_label):
     fpr = np.round(fpr, 4)
     tpr = np.round(tpr, 4)
 
-    roc_df = pd.DataFrame({'x': fpr, 'y': tpr})\
-            .groupby('x')\
-            .first()\
-            .reset_index()
+    roc_df = pd.DataFrame({'x': fpr, 'y': tpr}) \
+        .groupby('x') \
+        .first() \
+        .reset_index()
 
-    return roc_df, auc_value
+    auc_df = pd.DataFrame({'auc':auc_value})
+    return roc_df, auc_df
 
 def roc_plot(df,
              target,
@@ -126,13 +127,34 @@ def roc_plot(df,
     # compute roc curve parameters
     groups = [c for c in ['x', 'y', 'group', 'facet_x', 'facet_y'] if c in gdata.columns]
     roc_dfs = {}
-    auc_d = {}
+    auc_dfs = {}
     for g_name, g_df in data.groupby(groups):
-        roc_df, auc_value = compute_roc_params(g_df['x'], g_df['y'], pos_label)
-        roc_dfs[g_name] = roc_df
-        auc_d[g_name] - auc_value
+        roc_dfs[g_name], auc_dfs[g_name] = compute_roc_params(g_df['x'], g_df['y'], pos_label)
 
-    return roc_dfs, auc_d
+    roc_df = pd.concat(roc_dfs, names = groups) \
+        .reset_index()[['x', 'y']+groups]
+    auc_df = pd.concat(auc_dfs, names = groups) \
+        .reset_index()[['auc']+groups]
+
+    g = line_plot(roc_df,
+                  x = 'x',
+                  y = 'y',
+                  group = names['group'] + '= group' if group is not None else None,
+                  facet_x = 'facet_x' if facet_x is not None else None,
+                  facet_y = 'facet_y' if facet_y is not None else None,
+                  aggfun = None,
+                  show_points = False,
+                  base_size = base_size,
+                  figure_size = figure_size)
+    g += p9.geom_line(p9.aes(x='guide_x', y='guide_y'),
+                      data=pd.DataFrame(data={'guide_x':[0,1], 'guide_y':[0,1]}),
+                      color = '#696969',
+                      linetype = 'dashed')
+
+    g += p9.xlab('False Positive Rate') + \
+         p9.ylab('True Positive Rate')
+
+    return g, auc_df
 
 
 
