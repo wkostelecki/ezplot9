@@ -119,8 +119,9 @@ def roc_plot(df,
     if not ('group' in data.columns):
         data['group'] = ''
 
-    # reorder columns
+    # reorder columns and categories
     data = data[[c for c in ['x', 'y', 'group'] if c in data.columns]]
+    data['group'] = pd.Categorical(data['group'])
 
     # compute roc curve parameters
     roc_dfs = {}
@@ -140,12 +141,15 @@ def roc_plot(df,
     # init plot obj
     g = EZPlot(roc_df)
 
+    # get colors
+    colors = np.flip(ez_colors(g.n_groups('group')))
+
     # set groups
     if group is None:
         g += p9.geom_line(p9.aes(x="x", y="y"), group=1, colour=ez_colors(1)[0])
     else:
         g += p9.geom_line(p9.aes(x="x", y="y", group="factor(group)", colour="factor(group)"))
-        g += p9.scale_color_manual(values=ez_colors(g.n_groups('group')), name = names['group'])
+        g += p9.scale_color_manual(values=colors, name = names['group'])
         
     g += p9.geom_line(p9.aes(x='guide_x', y='guide_y'),
                       data=pd.DataFrame(data={'guide_x':[0,1], 'guide_y':[0,1]}),
@@ -158,8 +162,11 @@ def roc_plot(df,
     g += p9.scale_x_continuous(labels=percent_labels, limits=[0,1])
     g += p9.scale_y_continuous(labels=percent_labels, limits=[0,1])
     
-    g+=p9.geom_point(p9.aes(x='tmp', y='tmp', fill = 'label', group='factor(group)'), data = auc_df, stroke=0, size=4)
-    g+=p9.scale_fill_manual(values=ez_colors(g.n_groups('group')), name = 'AUC')
+    g+=p9.geom_point(p9.aes(x='tmp', y='tmp', fill = 'label', group='factor(group)'),
+                     data = auc_df,
+                     stroke=0,
+                     size=3)
+    g+=p9.scale_fill_manual(values=colors, name = 'AUC')
 
     # set theme
     g += theme_ez(figure_size = figure_size,
