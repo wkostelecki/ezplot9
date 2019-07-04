@@ -26,6 +26,44 @@ def calibration_plot(df,
                      sort_groups=True,
                      base_size=10,
                      figure_size=(6, 3)):
+    '''
+    Plot calibration curves for classification models
+
+    Parameters
+    ----------
+    df
+    prob : str
+      quoted expression to be plotted on the x axis (ie confidence/probability from a fitted model)
+    binary_target : str
+      quoted expression to be plotted on the y axis (ie the binarized target that will be considered)
+    group : str
+      quoted expression to be used as group (ie color)
+    facet_x : str
+      quoted expression to be used as facet
+    facet_y : str
+      quoted expression to be used as facet
+    bins : int or tuple
+      number of bins to be used
+    use_quantiles : bool
+      bin data using quantiles
+    label_pos : str
+      Use count label on each point. Choose between None, 'auto' or 'force'
+    label_function : callable
+      labelling function
+
+    sort_groups : bool
+      sort groups by the sum of their value (otherwise alphabetical order is used)
+    base_size : int
+      base size for theme_ez
+    figure_size :tuple of int
+      figure size
+
+    Returns
+    -------
+    g : EZPlot
+      EZplot object
+
+    '''
 
     g = marginal_plot(df,
                       prob,

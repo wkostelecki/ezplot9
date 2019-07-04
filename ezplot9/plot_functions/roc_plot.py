@@ -35,7 +35,6 @@ def roc_plot(df,
              prob,
              group=None,
              pos_label=1,
-             show_points=False,
              base_size=10,
              figure_size=(6, 3)):
     '''
@@ -51,8 +50,8 @@ def roc_plot(df,
       column(s) with probabilities
     group : str
       quoted expression to be used as group (ie color)
-    show_points : bool
-      show/hide markers
+    pos_label : int
+      positive label
     base_size : int
       base size for theme_ez
     figure_size :tuple of int
@@ -65,14 +64,12 @@ def roc_plot(df,
 
     '''
 
-    x=target
-    y=prob
-    if group is not None and isinstance(y, list) and len(y) > 1:
+    if group is not None and isinstance(prob, list) and len(prob) > 1:
         log.error("groups can be specified only when a single y column is present")
         raise ValueError("groups can be specified only when a single y column is present")
 
-    if isinstance(y, list) and len(y) == 1:
-        y = y[0]
+    if isinstance(prob, list) and len(prob) == 1:
+        prob = prob[0]
 
     # create a copy of the data
     dataframe = df.copy()
@@ -82,18 +79,18 @@ def roc_plot(df,
     groups = {}
     variables = {}
 
-    for label, var in zip(['x', 'group'], [x, group]):
+    for label, var in zip(['x', 'group'], [target, group]):
         names[label], groups[label] = unname(var)
 
     # fix special cases
-    if x == '.index':
+    if target == '.index':
         groups['x'] = '.index'
         names['x'] = dataframe.index.name if dataframe.index.name is not None else ''
 
-    if isinstance(y, list):
+    if isinstance(prob, list):
 
         ys = []
-        for i, var in enumerate(y):
+        for i, var in enumerate(prob):
             ys.append('y_{}'.format(i))
             names['y_{}'.format(i)], variables['y_{}'.format(i)] = unname(var)
 
@@ -110,7 +107,7 @@ def roc_plot(df,
 
     else:
 
-        names['y'], variables['y'] = unname(y)
+        names['y'], variables['y'] = unname(prob)
 
         # aggregate data
         data = agg_data(dataframe, variables, groups, None, fill_groups=True)
