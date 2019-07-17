@@ -123,13 +123,13 @@ def line_plot(df,
     if show_points:
       g += p9.geom_point(p9.aes(x="x", y="y"), group=1, colour = ez_colors(1)[0])
     if err is not None:
-      g += p9.geom_ribbon(p9.aes(x="x", ymax="y+err", ymin="y-err"), group=1, colour=ez_colors(1)[0])
+      g += p9.geom_ribbon(p9.aes(x="x", ymax="y+err", ymin="y-err"), group=1, fill=ez_colors(1)[0], alpha=0.2)
   else:
     g += p9.geom_line(p9.aes(x="x", y="y", group="factor(group)", colour="factor(group)"))
     if show_points:
       g += p9.geom_point(p9.aes(x="x", y="y", colour="factor(group)"))
     if err is not None:
-      g += p9.geom_ribbon(p9.aes(x="x", ymax="y+err", ymin="y-err", fill="factor(group)"))
+      g += p9.geom_ribbon(p9.aes(x="x", ymax="y+err", ymin="y-err", fill="factor(group)"), alpha=0.2)
     g += p9.scale_color_manual(values=ez_colors(g.n_groups('group')))
     g += p9.scale_fill_manual(values=ez_colors(g.n_groups('group')))
 
