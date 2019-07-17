@@ -106,13 +106,16 @@ def line_plot(df,
 
     names['y'], variables['y'] = unname(y)
     if err is not None:
-      names['err'], variables['y'] = unname(err)
+      names['err'], variables['err'] = unname(err)
 
     # aggregate data
     gdata = agg_data(dataframe, variables, groups, aggfun, fill_groups=True)
 
   # reorder columns
   gdata = gdata[[c for c in ['x', 'y', 'err', 'group', 'facet_x', 'facet_y'] if c in gdata.columns]]
+  if err is not None:
+    gdata['ymax'] = gdata['y'] + gdata['err']
+    gdata['ymin'] = gdata['y'] - gdata['err']
 
   # init plot obj
   g = EZPlot(gdata)
@@ -123,13 +126,13 @@ def line_plot(df,
     if show_points:
       g += p9.geom_point(p9.aes(x="x", y="y"), group=1, colour = ez_colors(1)[0])
     if err is not None:
-      g += p9.geom_ribbon(p9.aes(x="x", ymax="y+err", ymin="y-err"), group=1, fill=ez_colors(1)[0], alpha=0.2)
+      g += p9.geom_ribbon(p9.aes(x="x", ymax="ymax", ymin="ymin"), group=1, fill=ez_colors(1)[0], alpha=0.2)
   else:
     g += p9.geom_line(p9.aes(x="x", y="y", group="factor(group)", colour="factor(group)"))
     if show_points:
       g += p9.geom_point(p9.aes(x="x", y="y", colour="factor(group)"))
     if err is not None:
-      g += p9.geom_ribbon(p9.aes(x="x", ymax="y+err", ymin="y-err", fill="factor(group)"), alpha=0.2)
+      g += p9.geom_ribbon(p9.aes(x="x", ymax="ymax", ymin="ymin", fill="factor(group)"), alpha=0.2)
     g += p9.scale_color_manual(values=ez_colors(g.n_groups('group')))
     g += p9.scale_fill_manual(values=ez_colors(g.n_groups('group')))
 
