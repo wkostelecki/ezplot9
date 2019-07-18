@@ -13,6 +13,7 @@ def box_plot(df,
              group = None,
              facet_x = None,
              facet_y = None,
+             dodge_groups=True,
              base_size = 10,
              figure_size = (6,3),
              **kwargs):
@@ -81,10 +82,15 @@ def box_plot(df,
                              na_rm = False,
                              **kwargs)
     else:
-        g += p9.geom_boxplot(p9.aes(x="factor(x)", y="y", group="factor(group_x)", fill="factor(group)"),
-                             position=p9.position_dodge(0.9, preserve='single'),
-                             na_rm = True,
-                             **kwargs)
+        if dodge_groups:
+            g += p9.geom_boxplot(p9.aes(x="factor(x)", y="y", group="factor(group_x)", fill="factor(group)"),
+                                 position=p9.position_dodge(0.9, preserve='single'),
+                                 na_rm = True,
+                                 **kwargs)
+        else:
+            g += p9.geom_boxplot(p9.aes(x="factor(x)", y="y", group="factor(group_x)", fill="factor(group)"),
+                                 na_rm = True,
+                                 **kwargs)
         g += p9.scale_fill_manual(values=ez_colors(g.n_groups('group')))
 
     # set facets
