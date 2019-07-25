@@ -12,12 +12,11 @@ from .ezplot import EZPlot
 import logging
 log = logging.getLogger(__name__)
 
-POSITION_KWARGS = {'overlay':{'position':'identity', 'alpha':0.7},
+POSITION_KWARGS = {'overlay':{'position':'identity', 'alpha':0.2},
                    'stack':{'position':'stack'}}
 
 def density_plot(df,
                  x,
-                 y='1',
                  group = None,
                  facet_x = None,
                  facet_y = None,
@@ -36,8 +35,6 @@ def density_plot(df,
       input dataframe
     x : str
       quoted expression to be plotted on the x axis
-    y : str
-      quoted expression to be plotted on the y axis. If this is specified the histogram will be 2-d.
     group : str
       quoted expression to be used as group (ie color)
     facet_x : str
@@ -46,8 +43,6 @@ def density_plot(df,
       quoted expression to be used as facet
     position : str
       if groups are present, choose between `stack` or `overlay`
-    sort_groups : bool
-      sort groups by the sum of their value (otherwise alphabetical order is used)
     base_size : int
       base size for theme_ez
     figure_size :tuple of int
@@ -76,7 +71,6 @@ def density_plot(df,
 
     for label, var in zip(['x', 'group', 'facet_x', 'facet_y'], [x, group, facet_x, facet_y]):
         names[label], groups[label] = unname(var)
-    names['y'], variables['y'] = unname(y)
 
     # fix special cases
     if x == '.index':
@@ -85,40 +79,30 @@ def density_plot(df,
 
     # aggregate data and reorder columns
     gdata = agg_data(dataframe, variables, groups, None, fill_groups=True)
-    gdata.fillna(0, inplace=True)
-    gdata = gdata[[c for c in ['x', 'y', 'group', 'facet_x', 'facet_y'] if c in gdata.columns]]
+    gdata = gdata[[c for c in ['x', 'group', 'facet_x', 'facet_y'] if c in gdata.columns]]
 
     # start plotting
     g = EZPlot(gdata)
+    
     # determine order and create a categorical type
-    if (group is not None) and sort_groups:
-        if g.column_is_categorical('x'):
-            g.sort_group('x', 'y', ascending=False)
-        g.sort_group('group', 'y')
-        g.sort_group('facet_x', 'y', ascending=False)
-        g.sort_group('facet_y', 'y', ascending=False)
-        if groups:
-            colors = np.flip(ez_colors(g.n_groups('group')))
-    elif (group is not None):
-        colors = ez_colors(g.n_groups('group'))
+    colors = ez_colors(g.n_groups('group'))
 
     # set groups
     if group is None:
-        g += p9.geom_density(p9.aes(x="x", y="y"),
+        g += p9.geom_density(p9.aes(x="x"),
                              stat = p9.stats.stat_density(**stat_kwargs),
                              colour = ez_colors(1)[0],
                              fill = ez_colors(1)[0],
                              **POSITION_KWARGS[position])
     else:
-        g += p9.geom_density(p9.aes(x="x", y="y",
+        g += p9.geom_density(p9.aes(x="x",
                                     group="factor(group)",
-                                    stat = p9.stats.stat_density(**stat_kwargs),
+                                    colour="factor(group)",
                                     fill="factor(group)"),
-                             colour="factor(group)",
-                             stat = 'identity',
+                             stat = p9.stats.stat_density(**stat_kwargs),
                              **POSITION_KWARGS[position])
-        g += p9.scale_fill_manual(values=colors)
-        g += p9.scale_color_manual(values=colors)
+        g += p9.scale_fill_manual(values=colors, reverse=False)
+        g += p9.scale_color_manual(values=colors, reverse=False)
 
     # set facets
     if facet_x is not None and facet_y is None:
@@ -138,7 +122,7 @@ def density_plot(df,
     # set axis labels
     g += \
         p9.xlab(names['x']) + \
-        p9.ylab('Counts')
+        p9.ylab('Density')
 
     # set theme
     g += theme_ez(figure_size=figure_size,
