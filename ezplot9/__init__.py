@@ -4,6 +4,7 @@ from ezplot9.plot_functions.hist_plot import hist_plot
 from ezplot9.plot_functions.box_plot import box_plot
 from ezplot9.plot_functions.scatter_plot import scatter_plot
 from ezplot9.plot_functions.area_plot import area_plot
+from ezplot9.plot_functions.density_plot import density_plot
 from ezplot9.plot_functions.variable_histogram import variable_histogram
 from ezplot9.plot_functions.marginal_plot import marginal_plot
 from ezplot9.plot_functions.calibration_plot import calibration_plot
