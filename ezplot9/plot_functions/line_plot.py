@@ -18,6 +18,7 @@ def line_plot(df,
               facet_x=None,
               facet_y=None,
               aggfun='sum',
+              err = None,
               show_points=False,
               base_size=10,
               figure_size=(6, 3)):
@@ -40,6 +41,8 @@ def line_plot(df,
     quoted expression to be used as facet
   aggfun : str or fun
     function to be used for aggregating (eg sum, mean, median ...)
+  err : str
+     quoted expression to be used as error shaded area
   show_points : bool
     show/hide markers
   base_size : int
@@ -57,6 +60,10 @@ def line_plot(df,
   if group is not None and isinstance(y, list) and len(y)>1:
     log.error("groups can be specified only when a single y column is present")
     raise ValueError("groups can be specified only when a single y column is present")
+
+  if err is not None and isinstance(y, list) and len(y)>1:
+    log.error("err can be specified only when a single y column is present")
+    raise ValueError("err can be specified only when a single y column is present")
 
   if isinstance(y, list) and len(y)==1:
     y = y[0]
@@ -98,12 +105,17 @@ def line_plot(df,
   else:
 
     names['y'], variables['y'] = unname(y)
+    if err is not None:
+      names['err'], variables['err'] = unname(err)
 
     # aggregate data
     gdata = agg_data(dataframe, variables, groups, aggfun, fill_groups=True)
 
   # reorder columns
-  gdata = gdata[[c for c in ['x', 'y', 'group', 'facet_x', 'facet_y'] if c in gdata.columns]]
+  gdata = gdata[[c for c in ['x', 'y', 'err', 'group', 'facet_x', 'facet_y'] if c in gdata.columns]]
+  if err is not None:
+    gdata['ymax'] = gdata['y'] + gdata['err']
+    gdata['ymin'] = gdata['y'] - gdata['err']
 
   # init plot obj
   g = EZPlot(gdata)
@@ -113,11 +125,16 @@ def line_plot(df,
     g += p9.geom_line(p9.aes(x="x", y="y"), group=1, colour = ez_colors(1)[0])
     if show_points:
       g += p9.geom_point(p9.aes(x="x", y="y"), group=1, colour = ez_colors(1)[0])
+    if err is not None:
+      g += p9.geom_ribbon(p9.aes(x="x", ymax="ymax", ymin="ymin"), group=1, fill=ez_colors(1)[0], alpha=0.2)
   else:
     g += p9.geom_line(p9.aes(x="x", y="y", group="factor(group)", colour="factor(group)"))
     if show_points:
       g += p9.geom_point(p9.aes(x="x", y="y", colour="factor(group)"))
+    if err is not None:
+      g += p9.geom_ribbon(p9.aes(x="x", ymax="ymax", ymin="ymin", fill="factor(group)"), alpha=0.2)
     g += p9.scale_color_manual(values=ez_colors(g.n_groups('group')))
+    g += p9.scale_fill_manual(values=ez_colors(g.n_groups('group')))
 
   # set facets
   if facet_x is not None and facet_y is None:

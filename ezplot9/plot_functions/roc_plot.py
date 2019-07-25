@@ -132,7 +132,7 @@ def roc_plot(df,
     auc_df = pd.concat(auc_dfs, names = ['group']) \
         .reset_index()[['auc', 'group']]
 
-    auc_df['label'] = auc_df['auc'].apply(lambda x: '{:.3f}'.format(x))
+    auc_df['label'] = auc_df['auc'].apply(lambda x: '{:.4f}'.format(x))
     auc_df['tmp'] = -1
     
     # fix group order
