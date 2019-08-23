@@ -78,7 +78,7 @@ def density_plot(df,
         names['x'] = dataframe.index.name if dataframe.index.name is not None else ''
 
     # aggregate data and reorder columns
-    gdata = agg_data(dataframe, variables, groups, None, fill_groups=True)
+    gdata = agg_data(dataframe, variables, groups, None, fill_groups=False)
     gdata = gdata[[c for c in ['x', 'group', 'facet_x', 'facet_y'] if c in gdata.columns]]
 
     # start plotting
