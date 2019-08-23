@@ -41,13 +41,16 @@ def agg_data(df,
     # evaluation before aggregating (also changes column names)
     for key, val in dict(variables, **groups).items():
         if val is not None:
+            expr = '{}=({})'.format(key, val)
             try:
-                expr = '{}=({})'.format(key, val)
-                df.eval(expr, inplace=True)
+                df.eval(expr, inplace=True, engine = 'numexpr')
             except Exception as e:
-                log.error('The type in {} is not be supported and '
-                          'the expression cannot be evaluated.'.format(key))
-                raise e
+                try:
+                    df.eval(expr, inplace=True, engine='python')
+                except Exception as e:
+                    log.error('The type in {} is not be supported and '
+                              'the expression cannot be evaluated.'.format(key))
+                    raise e
 
     # aggregate df
     group_cols = list(groups.keys())
@@ -60,13 +63,16 @@ def agg_data(df,
     # evaluation after aggregation
     for key, val in delayed_variables.items():
         if not (val is None):
+            expr = '{}=({})'.format(key, val)
             try:
-                expr = '{}=({})'.format(key, val)
-                df.eval(expr, inplace=True)
+                df.eval(expr, inplace=True, engine = 'numexpr')
             except Exception as e:
-                log.error('The type in {} is not be supported and '
-                          'the expression cannot be evaluated.'.format(key))
-                raise e
+                try:
+                    df.eval(expr, inplace=True, engine='python')
+                except Exception as e:
+                    log.error('The type in {} is not be supported and '
+                              'the expression cannot be evaluated.'.format(key))
+                    raise e
 
     # select output
     all_variables = list(set(variables.keys()) | set(delayed_variables.keys()))
