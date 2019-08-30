@@ -61,7 +61,7 @@ def qbin_data(x,
 
     '''
 
-    binned_x = pd.qcut(x, q=n_quantiles)
+    binned_x = pd.qcut(x, q=n_quantiles, duplicates='drop')
     rename_dict = \
         pd.DataFrame({'x':x, 'q_x':binned_x})\
         .groupby('q_x')['x']\
