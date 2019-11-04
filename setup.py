@@ -15,7 +15,8 @@ setup(name='ezplot9',
             'seaborn',
             'plotnine',
             'pydataset',
-            'pytest'],
+            'pytest',
+            'bootstrapped'],
       license='MIT')
 
 

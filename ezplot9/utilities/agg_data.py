@@ -1,5 +1,9 @@
 import pandas as pd
 from itertools import product
+import types
+
+import bootstrapped.bootstrap as bs
+import bootstrapped.stats_functions as bs_stats
 
 import logging
 log = logging.getLogger(__name__)
@@ -56,7 +60,7 @@ def agg_data(df,
     group_cols = list(groups.keys())
 
     if aggfun is not None:
-        df = df.groupby(group_cols) \
+        df = df.groupby(group_cols)[list(variables.keys())] \
             .agg(aggfun) \
             .reset_index()
 
@@ -159,3 +163,26 @@ def get_groups(df = None,
         data_variables.pop(var, None)
 
     return data_groups, data_variables, delayed_variables
+
+def bootstrapping_aggregation(x,
+                              agg_fun = bs_stats.mean,
+                              num_iterations = 10_000,
+                              **kwargs):
+
+    # get x values and sample size
+    xvals = x.astype(float).values
+    sample_size = x.shape[0]
+
+    # get bootstrap results
+    bs_results = bs.bootstrap(values = xvals,
+                              stat_func = agg_fun,
+                              num_iterations = num_iterations,
+                              **kwargs)
+    out_dict = {'sample_size': sample_size,
+                'num_iterations': num_iterations,
+                'center': bs_results.value,
+                'low': bs_results.lower_bound,
+                'high': bs_results.upper_bound,
+                'successful': bs_results.get_result()}
+
+    return out_dict
