@@ -21,6 +21,7 @@ def ci_plot(df,
             figure_size = (6,3),
             aggfun = bs_stats.mean,
             num_iterations = 10_000,
+            geom = 'crossbar',
             **kwargs):
     '''
     Aggregates data in df and plots as a line chart.
@@ -83,8 +84,8 @@ def ci_plot(df,
                   'low': np.nan,
                   'high': np.nan,
                   'successful': np.nan}
-    gdata['y'] = gdata['y']\
-                .apply(lambda x: empty_dict if isinstance(x, float) and np.isnan(x) else x)
+    gdata['y'] = gdata['y'] \
+        .apply(lambda x: empty_dict if isinstance(x, float) and np.isnan(x) else x)
 
     gdata = gdata[[c for c in ['x', 'y', 'group', 'facet_x', 'facet_y'] if c in gdata.columns]]
     for k,v in kwargs.items():
@@ -98,21 +99,47 @@ def ci_plot(df,
                        json_normalize(gdata['y'])],
                       axis=1)
 
-    g = EZPlot(gdata)
+    if geom=='crossbar':
+        g = EZPlot(gdata)
 
-    # set groups
-    if group is None:
-        g += p9.geom_crossbar(p9.aes(x="factor(x)", y='center', ymin='low', ymax='high',
-                                     group="factor(x)"),
-                              colour = ez_colors(1)[0],
-                              na_rm = False)
-    else:
-        g += p9.geom_crossbar(p9.aes(x="factor(x)", y='center', ymin='low', ymax='high',
-                                     group="factor(group_x)", fill="factor(group)"),
-                              position=p9.position_dodge(0.9, preserve='single'),
-                              na_rm = True)
+        # set groups
+        if group is None:
+            g += p9.geom_crossbar(p9.aes(x="x", y='center', ymin='low', ymax='high'),
+                                  colour = ez_colors(1)[0],
+                                  na_rm = False)
+        else:
+            g += p9.geom_crossbar(p9.aes(x="x", y='center', ymin='low', ymax='high',
+                                         group="factor(group_x)", fill="factor(group)"),
+                                  position=p9.position_dodge(0.9, preserve='single'),
+                                  na_rm = True)
 
-        g += p9.scale_fill_manual(values=ez_colors(g.n_groups('group')))
+            g += p9.scale_fill_manual(values=ez_colors(g.n_groups('group')))
+
+    elif geom=='ribbon':
+
+        g = EZPlot(gdata.dropna())
+
+        # set groups
+        if group is None:
+            g += p9.geom_ribbon(p9.aes(x="x", y='center', ymin='low', ymax='high'),
+                                fill=ez_colors(1)[0],
+                                alpha=0.2,
+                                na_rm=False)
+            g += p9.geom_line(p9.aes(x="x", y='center'),
+                                colour=ez_colors(1)[0],
+                                na_rm=False)
+        else:
+            g += p9.geom_ribbon(p9.aes(x="x", y='center', ymin='low', ymax='high',
+                                       group="group", fill="group"),
+                                na_rm=True,
+                                alpha=0.2,)
+            g += p9.geom_line(p9.aes(x="x", y='center',
+                                       group="group", colour="group"),
+                                na_rm=True)
+
+            g += p9.scale_fill_manual(values=ez_colors(g.n_groups('group')))
+            g += p9.scale_color_manual(values=ez_colors(g.n_groups('group')))
+
 
     # set facets
     if facet_x is not None and facet_y is None:
@@ -121,7 +148,12 @@ def ci_plot(df,
         g += p9.facet_grid('facet_y~facet_x')
 
     # set x scale
-    g += p9.scale_x_discrete()
+    if g.column_is_timestamp('x'):
+        g += p9.scale_x_datetime()
+    elif g.column_is_categorical('x'):
+        g += p9.scale_x_discrete()
+    else:
+        g += p9.scale_x_continuous(labels=ez_labels)
 
     # set y scale
     g += p9.scale_y_continuous(labels=ez_labels)
