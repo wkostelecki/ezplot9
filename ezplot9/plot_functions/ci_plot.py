@@ -109,11 +109,13 @@ def ci_plot(df,
                                   na_rm = False)
         else:
             g += p9.geom_crossbar(p9.aes(x="x", y='center', ymin='low', ymax='high',
-                                         group="factor(group_x)", fill="factor(group)"),
-                                  position=p9.position_dodge(0.9, preserve='single'),
-                                  na_rm = True)
+                                         group="factor(group_x)", colour="factor(group)", fill="factor(group)"),
+                                  position=p9.position_dodge(0.7, preserve='single'),
+                                  na_rm = True,
+                                  alpha = 0.2)
 
             g += p9.scale_fill_manual(values=ez_colors(g.n_groups('group')))
+            g += p9.scale_colour_manual(values=ez_colors(g.n_groups('group')))
 
     elif geom=='ribbon':
 
