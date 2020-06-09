@@ -16,7 +16,9 @@ setup(name='ezplot9',
             'plotnine',
             'pydataset',
             'pytest',
-            'bootstrapped'],
+            'bootstrapped',
+            'scikit-learn'
+      ],
       license='MIT')
 
 
