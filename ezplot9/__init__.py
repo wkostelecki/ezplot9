@@ -9,5 +9,6 @@ from ezplot9.plot_functions.variable_histogram import variable_histogram
 from ezplot9.plot_functions.marginal_plot import marginal_plot
 from ezplot9.plot_functions.calibration_plot import calibration_plot
 from ezplot9.plot_functions.roc_plot import roc_plot
+from ezplot9.plot_functions.ci_plot import ci_plot
 
 from ezplot9.utilities.labellers import percent_labels, ez_labels, bp_labels, money_labels
